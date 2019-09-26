@@ -21,6 +21,12 @@ public class VuforiaNavigationTestSkyStone extends OpMode {
 
     VuforiaLib_SkyStone mVLib;
 
+    public VuforiaNavigationTestSkyStone()
+    {
+        // override default init timeout to prevent timeouts while starting Vuforia on slow phones
+        this.msStuckDetectInit = 10000;
+    }
+
     @Override public void init() {
         /**
          * Start up Vuforia
