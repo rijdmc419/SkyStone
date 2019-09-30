@@ -23,7 +23,8 @@ public class VuforiaNavigationTestSkyStone extends OpMode {
 
     public VuforiaNavigationTestSkyStone()
     {
-        // override default init timeout to prevent timeouts while starting Vuforia on slow phones
+        // override default init timeout to prevent timeouts while starting Vuforia on slow phones.
+        // need to do it here so it's in effect BEFORE init() is called.
         this.msStuckDetectInit = 10000;
     }
 
@@ -32,7 +33,7 @@ public class VuforiaNavigationTestSkyStone extends OpMode {
          * Start up Vuforia
          */
         mVLib = new VuforiaLib_SkyStone();
-        mVLib.init(this, null);     // pass it this OpMode (so it can do telemetry output) and use its license key for now
+        mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
     }
 
     @Override public void start()
@@ -43,7 +44,27 @@ public class VuforiaNavigationTestSkyStone extends OpMode {
 
     @Override public void loop()
     {
-        mVLib.loop(true);       // update location info and do debug telemetry
+        mVLib.loop(false);       // update location info
+
+        String allVisible = new String();
+        for (String visible : mVLib.getVisibleNames())
+            allVisible = allVisible + visible + ",";
+        telemetry.addData("Visible", allVisible);
+
+        if (mVLib.haveLocation()) {
+            telemetry.addData("Position", mVLib.formatPosition(mVLib.getLastLocation()));
+            telemetry.addData("Field Position", mVLib.getFieldPosition());
+        }
+        else
+            telemetry.addData("Position", "Unknown");
+
+        if (mVLib.haveHeading()) {
+            telemetry.addData("Orientation", mVLib.formatOrientation(mVLib.getLastLocation()));
+            telemetry.addData("Heading", mVLib.getHeading());
+        }
+        else
+            telemetry.addData("Orientation:", "Unknown");
+
     }
 
     @Override public void stop()

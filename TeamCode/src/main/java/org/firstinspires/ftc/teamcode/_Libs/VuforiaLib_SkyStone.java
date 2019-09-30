@@ -81,6 +81,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     myVuforiaLocalizerImpl vuforia;
     VuforiaTrackables targetsSkyStone = null;
     List<VuforiaTrackable> allTrackables;
+    List<String> visibleTrackables;
     OpenGLMatrix lastLocation = null;
     OpMode mOpMode;
 
@@ -121,7 +122,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
 
-    public void init(OpMode opMode, String licenseKey) {
+    public void init(OpMode opMode) {
 
         // remember this so we can do telemetry output
         mOpMode = opMode;
@@ -199,6 +200,8 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
         allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsSkyStone);
 
+        // create this list too
+        visibleTrackables = new ArrayList<String>();
 
         /**
          * In order for localization to work, we need to tell the system where each target is on the field, and
@@ -356,6 +359,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     public void loop(boolean bTelemetry)
     {
         lastLocation = null;    // reset each time so we can tell if we currently have any target visible
+        visibleTrackables.clear();
 
         for (VuforiaTrackable trackable : allTrackables) {
             /**
@@ -363,8 +367,11 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
              * the last time that call was made, or if the trackable is not currently visible.
              * getRobotLocation() will return null if the trackable is not currently visible.
              */
-            if (bTelemetry && ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible())
-                mOpMode.telemetry.addData(trackable.getName(), "Visible");    //
+            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
+                if (bTelemetry)
+                    mOpMode.telemetry.addData(trackable.getName(), "Visible");    //
+                visibleTrackables.add(trackable.getName());
+            }
 
             OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getRobotLocation();
             if (robotLocationTransform != null) {
@@ -453,19 +460,23 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     public VectorF getLocation() { return getFieldPosition(); }
     public boolean haveLocation() { return (lastLocation != null);}       // is there valid location data?
 
+    // get a list of the names of the currently visible trackables
+    public List<String> getVisibleNames() { return visibleTrackables; }
+
     /**
      * Some simple utilities that extract information from a transformation matrix
      * and format it in a form palatable to a human being.
      * For sanity's sake, display translations in inches rather than mm.
      */
 
-    String formatPosition(OpenGLMatrix transformationMatrix) {
+    public String formatPosition(OpenGLMatrix transformationMatrix) {
         //return transformationMatrix.formatAsTransform();
         VectorF translation = transformationMatrix.getTranslation();
         translation.multiply(1.0f/25.4f);       // convert from mm to inches
         return String.format("%s inches", translation.toString());
     }
-    String formatOrientation(OpenGLMatrix transformationMatrix) {
+
+    public String formatOrientation(OpenGLMatrix transformationMatrix) {
         //return transformationMatrix.formatAsTransform();
         Orientation orientation = Orientation.getOrientation(transformationMatrix, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
         return String.format("%s", orientation.toString());
@@ -598,9 +609,9 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
      */
     private TFObjectDetector tfod = null;
 
-    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
-    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
-    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
+    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
+    private static final String LABEL_STONE = "Stone";
+    private static final String LABEL_SKYSTONE = "Skystone";
 
     /**
      * Initialize the Tensor Flow Object Detection engine.
@@ -612,7 +623,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
                     "tfodMonitorViewId", "id", opmode.hardwareMap.appContext.getPackageName());
             TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
             tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_STONE, LABEL_SKYSTONE);
             return tfod;
         }
         return null;
