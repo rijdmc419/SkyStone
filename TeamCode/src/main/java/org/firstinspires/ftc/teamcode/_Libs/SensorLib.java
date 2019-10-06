@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
 
+import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
@@ -296,5 +297,13 @@ public class SensorLib {
         public double getX() { return mPosition.x; }
         public double getY() { return mPosition.y; }
         public Position getPosition() { return mPosition; }
+
+        // set the current position (presumably from some other reliable source)
+        public void setPosition(Position position) { mPosition = position; }
+        public void setPosition(VectorF pos) {
+            // update position from Vuforia (VectorF in mm)
+            final float MMPERINCH = 25.4f;
+            mPosition = new Position(DistanceUnit.INCH, pos.get(0)/MMPERINCH, pos.get(1)/MMPERINCH, pos.get(2)/MMPERINCH, 0);
+        }
     }
 }
