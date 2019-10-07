@@ -34,23 +34,25 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 package org.firstinspires.ftc.teamcode._TeleOp;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Libs.VuforiaLib_SkyStone;
 
 /**
  * TeleOp Mode
- * <p>
+ *
  * Enables control of the robot via the gamepad
- * Uses position integration to estimate where we are on the field
+ * Uses Vuforia to update PositionIntegrator estimate where we are on the field
  */
 
-@TeleOp(name="TankDrive PosInt Encoder", group="Test")  // @Autonomous(...) is the other common choice
+@TeleOp(name="TankDrive Vuforia", group="Test")  // @Autonomous(...) is the other common choice
 //@Disabled
 public class TankDriveVuforia extends OpMode {
 
@@ -59,35 +61,31 @@ public class TankDriveVuforia extends OpMode {
 	DcMotor motorBackRight;
 	DcMotor motorBackLeft;
 
-	SensorLib.PositionIntegrator mPosInt;	// position integrator
+	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 	BNO055IMUHeadingSensor mGyro;           // gyro to use for heading information
-	int mEncoderPrev;						// previous reading of motor encoder
+
+	VuforiaLib_SkyStone mVLib;
 
 	boolean bDebug = false;
-	boolean bFirstLoop = true;
 
-	DcMotor mEncoderMotor;					// the motor we'll use for encoder input
 
 	/**
 	 * Constructor
 	 */
 	public TankDriveVuforia() {
-
+		// override default init timeout to prevent timeouts while starting Vuforia on slow phones.
+		// need to do it here so it's in effect BEFORE init() is called.
+		this.msStuckDetectInit = 10000;
 	}
 
 	/*
 	 * Code to run when the op mode is first enabled goes here
-	 * 
+	 *
 	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
 	 */
 	@Override
 	public void init() {
-		/*
-		 * Use the hardwareMap to get the dc motors and servos by name. Note
-		 * that the names of the devices must match the names used when you
-		 * configured your robot and created the configuration file.
-		 */
-		
+
 		/*
 		 * For this test, we assume the following,
 		 *   There are four motors
@@ -106,31 +104,41 @@ public class TankDriveVuforia extends OpMode {
 			bDebug = true;
 		}
 
-		// create position integrator
-		mPosInt = new SensorLib.PositionIntegrator();
+		// Start up Vuforia
+		mVLib = new VuforiaLib_SkyStone();
+		mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
+
+		// on Ratbot, only two motor encoders are hooked up
+		DcMotor[] encoderMotors = new DcMotor[2];
+		encoderMotors[0] = motorFrontLeft;
+		encoderMotors[1] = motorBackRight;
 
 		// get hardware IMU and wrap gyro in HeadingSensor object usable below
 		mGyro = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
 		mGyro.init(7);  // orientation of REV hub in my ratbot
 		mGyro.setDegreesPerTurn(355.0f);     // appears that's what my IMU does ...
 
-		bFirstLoop = true;
-		mEncoderMotor = motorBackRight;
+		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
+		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
+		double wheelDiam = 4.0;		    // wheel diameter (in)
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
+		// example starting position: at origin of field
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, mGyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+	}
+
+	@Override public void start()
+	{
+		/** Start tracking the data sets we care about. */
+		mVLib.start();
 	}
 
 	/*
 	 * This method will be called repeatedly in a loop
-	 * 
+	 *
 	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#run()
 	 */
 	@Override
 	public void loop() {
-
-		// get initial encoder value
-		if (bFirstLoop) {
-			mEncoderPrev = mEncoderMotor.getCurrentPosition();
-			bFirstLoop = false;
-		}
 
 		// tank drive
 		// note that if y equal -1 then joystick is pushed all of the way forward.
@@ -155,19 +163,16 @@ public class TankDriveVuforia extends OpMode {
 			motorBackLeft.setPower(left);
 		}
 
-		// get current encoder value and compute delta since last read
-		int encoder = mEncoderMotor.getCurrentPosition();
-		int encoderDist = encoder - mEncoderPrev;
-		mEncoderPrev = encoder;
+		// update position estimate using motor encoders and gyro
+		mPosInt.loop();
 
-		// get bearing from IMU gyro
-		double imuBearingDeg = mGyro.getHeading();
+		// update Vuforia info and, if we have valid location data, update the position integrator with it
+		mVLib.loop(true);       // update Vuforia location info
 
-		// update accumulated field position
-		final int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
-		final double wheelDiam = 4.0;		// wheel diameter (in)
-		double dist = (encoderDist * wheelDiam * Math.PI)/countsPerRev;
-		mPosInt.move(dist, imuBearingDeg);
+		// if we have Vuforia location data, update the position integrator from it
+		if (mVLib.haveLocation()) {
+			mPosInt.setPosition(mVLib.getFieldPosition());
+		}
 
 		/*
 		 * Send telemetry data back to driver station.
@@ -182,16 +187,16 @@ public class TankDriveVuforia extends OpMode {
 
 	/*
 	 * Code to run when the op mode is first disabled goes here
-	 * 
+	 *
 	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#stop()
 	 */
 	@Override
 	public void stop() {
-
+		mVLib.stop();
 	}
-	
+
 	/*
-	 * This method scales the joystick input so for low joystick values, the 
+	 * This method scales the joystick input so for low joystick values, the
 	 * scaled value is less than linear.  This is to make it easier to drive
 	 * the robot more precisely at slower speeds.
 	 */

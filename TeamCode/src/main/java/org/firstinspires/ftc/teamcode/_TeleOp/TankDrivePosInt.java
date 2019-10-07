@@ -63,12 +63,8 @@ public class TankDrivePosInt extends OpMode {
 
 	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 	BNO055IMUHeadingSensor mGyro;           // gyro to use for heading information
-	int mEncoderPrev;						// previous reading of motor encoder
 
 	boolean bDebug = false;
-	boolean bFirstLoop = true;
-
-	DcMotor mEncoderMotor;					// the motor we'll use for encoder input
 
 	/**
 	 * Constructor
@@ -119,9 +115,6 @@ public class TankDrivePosInt extends OpMode {
 		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
 		// example starting position: at origin of field
 		mPosInt = new SensorLib.EncoderGyroPosInt(this, mGyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
-
-		bFirstLoop = true;
-		mEncoderMotor = motorBackRight;
 	}
 
 	/*
@@ -131,12 +124,6 @@ public class TankDrivePosInt extends OpMode {
 	 */
 	@Override
 	public void loop() {
-
-		// get initial encoder value
-		if (bFirstLoop) {
-			mEncoderPrev = mEncoderMotor.getCurrentPosition();
-			bFirstLoop = false;
-		}
 
 		// tank drive
 		// note that if y equal -1 then joystick is pushed all of the way forward.
