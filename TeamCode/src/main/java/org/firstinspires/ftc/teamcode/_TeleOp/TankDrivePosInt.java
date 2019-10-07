@@ -40,6 +40,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 
@@ -59,7 +61,7 @@ public class TankDrivePosInt extends OpMode {
 	DcMotor motorBackRight;
 	DcMotor motorBackLeft;
 
-	SensorLib.PositionIntegrator mPosInt;	// position integrator
+	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 	BNO055IMUHeadingSensor mGyro;           // gyro to use for heading information
 	int mEncoderPrev;						// previous reading of motor encoder
 
@@ -82,12 +84,7 @@ public class TankDrivePosInt extends OpMode {
 	 */
 	@Override
 	public void init() {
-		/*
-		 * Use the hardwareMap to get the dc motors and servos by name. Note
-		 * that the names of the devices must match the names used when you
-		 * configured your robot and created the configuration file.
-		 */
-		
+
 		/*
 		 * For this test, we assume the following,
 		 *   There are four motors
@@ -106,13 +103,22 @@ public class TankDrivePosInt extends OpMode {
 			bDebug = true;
 		}
 
-		// create position integrator
-		mPosInt = new SensorLib.PositionIntegrator();
+		// on Ratbot, only two motor encoders are hooked up
+		DcMotor[] encoderMotors = new DcMotor[2];
+		encoderMotors[0] = motorFrontLeft;
+		encoderMotors[1] = motorBackRight;
 
 		// get hardware IMU and wrap gyro in HeadingSensor object usable below
 		mGyro = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
 		mGyro.init(7);  // orientation of REV hub in my ratbot
 		mGyro.setDegreesPerTurn(355.0f);     // appears that's what my IMU does ...
+
+		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
+		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
+		double wheelDiam = 4.0;		    // wheel diameter (in)
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
+		// example starting position: at origin of field
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, mGyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
 
 		bFirstLoop = true;
 		mEncoderMotor = motorBackRight;
@@ -155,19 +161,8 @@ public class TankDrivePosInt extends OpMode {
 			motorBackLeft.setPower(left);
 		}
 
-		// get current encoder value and compute delta since last read
-		int encoder = mEncoderMotor.getCurrentPosition();
-		int encoderDist = encoder - mEncoderPrev;
-		mEncoderPrev = encoder;
-
-		// get bearing from IMU gyro
-		double imuBearingDeg = mGyro.getHeading();
-
-		// update accumulated field position
-		final int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
-		final double wheelDiam = 4.0;		// wheel diameter (in)
-		double dist = (encoderDist * wheelDiam * Math.PI)/countsPerRev;
-		mPosInt.move(dist, imuBearingDeg);
+		// update position estimate using motor encoders and gyro
+		mPosInt.loop();
 
 		/*
 		 * Send telemetry data back to driver station.

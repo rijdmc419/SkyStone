@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode._Libs;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.UltrasonicSensor;
@@ -306,4 +307,68 @@ public class SensorLib {
             mPosition = new Position(DistanceUnit.INCH, pos.get(0)/MMPERINCH, pos.get(1)/MMPERINCH, pos.get(2)/MMPERINCH, 0);
         }
     }
+
+    // use a set of motor encoders and gyro to track absolute field position
+    // assumes normal drive (not Mechanum or X-drive, which requires additional logic to handle sideways movement)
+    public static class EncoderGyroPosInt extends SensorLib.PositionIntegrator {
+        OpMode mOpMode;
+        HeadingSensor mGyro;
+        DcMotor[] mEncoderMotors;    // set of motors whose encoders we will average to get net movement
+
+        int mEncoderPrev[];		// previous readings of motor encoders
+        boolean mFirstLoop;
+
+        int mCountsPerRev;
+        double mWheelDiam;
+
+        public EncoderGyroPosInt(OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
+        {
+            super(initialPosn);
+            mOpMode = opmode;
+            mGyro = gyro;
+            mEncoderMotors = encoderMotors;
+            mFirstLoop = true;
+            mCountsPerRev = countsPerRev;
+            mWheelDiam = wheelDiam;
+            mEncoderPrev = new int[encoderMotors.length];
+        }
+
+        public boolean loop() {
+            // get initial encoder value
+            if (mFirstLoop) {
+                for (int i=0; i<mEncoderMotors.length; i++)
+                    mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
+                mFirstLoop = false;
+            }
+
+            // get current encoder values and compute average delta since last read
+            int encoderDist = 0;
+            for (int i=0; i<mEncoderMotors.length; i++) {
+                int encoder = mEncoderMotors[i].getCurrentPosition();
+                encoderDist += encoder - mEncoderPrev[i];
+                mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
+            }
+            encoderDist /= mEncoderMotors.length;
+
+            // get bearing from IMU gyro
+            double imuBearingDeg = mGyro.getHeading();
+
+            // update accumulated field position
+            double dist = (encoderDist * mWheelDiam * Math.PI)/mCountsPerRev;
+            this.move(dist, imuBearingDeg);
+
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("EGPI position", String.format("%.2f", this.getX()) + ", " + String.format("%.2f", this.getY()));
+                //Position simPos = mOpMode.virtualBot.getPosition();     // get the "actual" position from the VirtualBot to see how well our PosInt is tracking ...
+                //mOpMode.telemetry.addData("Vbot position", String.format("%.2f", simPos.x) + ", " + String.format("%.2f", simPos.y));
+            }
+
+            return true;
+        }
+
+        public HeadingSensor getGyro() {
+            return mGyro;
+        }
+    }
+
 }
