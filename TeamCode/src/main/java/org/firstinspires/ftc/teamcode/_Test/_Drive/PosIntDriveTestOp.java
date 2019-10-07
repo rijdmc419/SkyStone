@@ -254,7 +254,6 @@ public class PosIntDriveTestOp extends OpMode {
     }
 
     public void stop() {
-        super.stop();
     }
 }
 
