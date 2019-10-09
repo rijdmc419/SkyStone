@@ -38,7 +38,10 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
+import com.vuforia.TrackableResult;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
@@ -169,9 +172,18 @@ public class TankDriveVuforia extends OpMode {
 		// update Vuforia info and, if we have valid location data, update the position integrator with it
 		mVLib.loop(true);       // update Vuforia location info
 
-		// if we have Vuforia location data, update the position integrator from it
-		if (mVLib.haveLocation()) {
-			mPosInt.setPosition(mVLib.getFieldPosition());
+		// don't believe Vuforia data if we're currently turning (blurry image?)
+		float angVel = mGyro.getHeadingVelocity();	// in deg/sec
+		boolean turningTooFast = Math.abs(angVel) > 10.0;
+
+		// if we have Vuforia location data, update the position integrator from it.
+		// use STATUS and STATUS_INFO associated with the sample to decide how much to believe it.
+		if (mVLib.haveLocation() && mVLib.getTrackableStatusInfo() == TrackableResult.STATUS_INFO.NORMAL && !turningTooFast) {
+			if (mVLib.getTrackableStatus() == TrackableResult.STATUS.TRACKED)
+				mPosInt.setPosition(mVLib.getFieldPosition());
+			else
+			if (mVLib.getTrackableStatus() == TrackableResult.STATUS.EXTENDED_TRACKED)
+				mPosInt.setPosition(mVLib.getFieldPosition(), 0.5f);
 		}
 
 		/*
@@ -183,6 +195,7 @@ public class TankDriveVuforia extends OpMode {
 		telemetry.addData("gamepad1", gamepad1);
 		telemetry.addData("gamepad2", gamepad2);
 		telemetry.addData("position", String.format("%.2f", mPosInt.getX())+", " + String.format("%.2f", mPosInt.getY()));
+		telemetry.addData("rotation rate", angVel);
 	}
 
 	/*
