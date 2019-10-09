@@ -297,14 +297,22 @@ public class SensorLib {
         // get the current position
         public double getX() { return mPosition.x; }
         public double getY() { return mPosition.y; }
+        public double getZ() { return mPosition.z; }
         public Position getPosition() { return mPosition; }
 
         // set the current position (presumably from some other reliable source)
         public void setPosition(Position position) { mPosition = position; }
         public void setPosition(VectorF pos) {
-            // update position from Vuforia (VectorF in mm)
-            final float MMPERINCH = 25.4f;
+            final float MMPERINCH = 25.4f;   // assume update position is from Vuforia (VectorF in mm)
             mPosition = new Position(DistanceUnit.INCH, pos.get(0)/MMPERINCH, pos.get(1)/MMPERINCH, pos.get(2)/MMPERINCH, 0);
+        }
+        // update current position by mixing current position with given position at given weight
+        public void setPosition(VectorF pos, float weight) {
+            final float MMPERINCH = 25.4f;   // assume update position is from Vuforia (VectorF in mm)
+            mPosition = new Position(DistanceUnit.INCH,
+                    (1-weight)*getX()+weight*(pos.get(0)/MMPERINCH),
+                    (1-weight)*getY()+weight*(pos.get(1)/MMPERINCH),
+                    (1-weight)*getZ()+weight*(pos.get(2)/MMPERINCH), 0);
         }
     }
 
