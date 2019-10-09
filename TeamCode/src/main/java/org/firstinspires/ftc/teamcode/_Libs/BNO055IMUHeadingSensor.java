@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode._Libs;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import static android.os.SystemClock.sleep;
@@ -70,6 +71,23 @@ public class BNO055IMUHeadingSensor implements HeadingSensor {
 
     public Orientation getAngularOrientation() {
         return mIMU.getAngularOrientation();
+    }
+
+    // get angular velocity about the vehicle Z axis in degrees/sec -- depends on RevHub orientation
+    public float getHeadingVelocity() {
+        AngularVelocity av = mIMU.getAngularVelocity();
+        switch (mOrientation) {
+            case 0: case 1: case 2: case 3: case 4: {
+                return av.zRotationRate;
+            }
+            case 5: case 6: case 7: {
+                return av.xRotationRate;
+            }
+            case 8: {
+                return -av.zRotationRate;
+            }
+        }
+        return 0;
     }
 
     public Position getPosition() {
