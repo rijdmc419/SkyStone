@@ -317,7 +317,7 @@ public class SensorLib {
     }
 
     // use a set of motor encoders and gyro to track absolute field position
-    // assumes normal drive (not Mechanum or X-drive, which requires additional logic to handle sideways movement)
+    // assumes normal drive (not Mecanum or X-drive, which requires additional logic to handle sideways movement)
     public static class EncoderGyroPosInt extends SensorLib.PositionIntegrator {
         OpMode mOpMode;
         HeadingSensor mGyro;
@@ -367,8 +367,94 @@ public class SensorLib {
 
             if (mOpMode != null) {
                 mOpMode.telemetry.addData("EGPI position", String.format("%.2f", this.getX()) + ", " + String.format("%.2f", this.getY()));
-                //Position simPos = mOpMode.virtualBot.getPosition();     // get the "actual" position from the VirtualBot to see how well our PosInt is tracking ...
-                //mOpMode.telemetry.addData("Vbot position", String.format("%.2f", simPos.x) + ", " + String.format("%.2f", simPos.y));
+            }
+
+            return true;
+        }
+
+        public HeadingSensor getGyro() {
+            return mGyro;
+        }
+    }
+
+    // use a set of motor encoders and gyro to track absolute field position --
+    // this version supports Mecanum and X-drives, which require additional logic to handle sideways movement
+    public static class MecanumEncoderGyroPosInt extends SensorLib.PositionIntegrator {
+        OpMode mOpMode;
+        HeadingSensor mGyro;
+        DcMotor[] mEncoderMotors;    // set of motors whose encoders we will average to get net movement
+
+        int mEncoderPrev[];		// previous readings of motor encoders
+        boolean mFirstLoop;
+
+        int mCountsPerRev;
+        double mWheelDiam;
+
+        boolean mIsXDrive = false;
+
+        public MecanumEncoderGyroPosInt(OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
+        {
+            super(initialPosn);
+            mOpMode = opmode;
+            mGyro = gyro;
+            mEncoderMotors = encoderMotors;
+            mFirstLoop = true;
+            mCountsPerRev = countsPerRev;
+            mWheelDiam = wheelDiam;
+            mEncoderPrev = new int[encoderMotors.length];
+        }
+
+        // set this true for XDrive (vs. regular Mecanum drive)
+        public void setIsXDrive(boolean x) { mIsXDrive = x; }
+
+        public boolean loop() {
+            // get initial encoder value
+            if (mFirstLoop) {
+                for (int i=0; i<mEncoderMotors.length; i++)
+                    mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
+                mFirstLoop = false;
+            }
+
+            // get current encoder values and compute deltas since last read
+            int encoderDist[] = new int[4];
+            for (int i=0; i<mEncoderMotors.length; i++) {
+                int encoder = mEncoderMotors[i].getCurrentPosition();
+                encoderDist[i] = encoder - mEncoderPrev[i];
+                mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
+            }
+
+            // compute physical distance each wheel thinks it moved
+            double dist[] = new double[4];
+            for (int i=0; i<4; i++)
+                dist[i] = (encoderDist[i] * mWheelDiam * Math.PI)/mCountsPerRev;
+
+            // compute robot motion in relative x (across) and y(along) directions for Mecanum or X-drive
+            double[] robotDeltaPos = new double[] {0,0};
+            double tWR[][] = new double[][] {
+                    {0.25, -0.25, 0.25, -0.25},
+                    {0.25, 0.25, 0.25, 0.25}
+            };
+            for (int i=0; i<2; i++){
+                for (int j = 0; j<4; j++){
+                    robotDeltaPos[i] += tWR[i][j] * dist[j];
+                }
+            }
+            double dxR = robotDeltaPos[0];
+            double dyR = robotDeltaPos[1];
+
+            // each wheel rotation moves the bot further with X-drive
+            if (mIsXDrive) {
+                dxR *= Math.sqrt(2);
+                dyR *= Math.sqrt(2);
+            }
+
+            // get bearing from IMU gyro
+            double imuBearingDeg = mGyro.getHeading();
+
+            // update accumulated field position
+            this.move(dxR, dyR, imuBearingDeg);
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("EGPI position", String.format("%.2f", this.getX()) + ", " + String.format("%.2f", this.getY()));
             }
 
             return true;
