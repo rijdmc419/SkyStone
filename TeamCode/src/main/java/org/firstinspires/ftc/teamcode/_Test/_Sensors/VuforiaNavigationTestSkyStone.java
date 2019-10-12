@@ -52,18 +52,22 @@ public class VuforiaNavigationTestSkyStone extends OpMode {
         telemetry.addData("Visible", allVisible);
 
         if (mVLib.haveLocation()) {
-            telemetry.addData("Position", mVLib.formatPosition(mVLib.getLastLocation()));
-            telemetry.addData("Field Position", mVLib.getFieldPosition());
+            telemetry.addData("Position (in)", mVLib.formatPosition(mVLib.getLastLocation()));
+            telemetry.addData("Field Position (mm)", mVLib.getFieldPosition());
         }
         else
             telemetry.addData("Position", "Unknown");
 
         if (mVLib.haveHeading()) {
-            telemetry.addData("Orientation", mVLib.formatOrientation(mVLib.getLastLocation()));
-            telemetry.addData("Heading", mVLib.getHeading());
+            telemetry.addData("Orientation (deg)", mVLib.formatOrientation(mVLib.getLastLocation()));
+            telemetry.addData("Heading (deg)", mVLib.getHeading());
         }
         else
             telemetry.addData("Orientation:", "Unknown");
+
+        // get tracking quality info
+        telemetry.addData("tracking status", mVLib.getTrackableStatus());
+        telemetry.addData("tracking statusInfo", mVLib.getTrackableStatusInfo());
 
     }
 
