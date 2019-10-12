@@ -411,6 +411,8 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     {
         lastLocation = null;    // reset each time so we can tell if we currently have any target visible
         visibleTrackables.clear();
+        trackableStatus = -1;   // invalid value
+        trackableStatusInfo = -1;
 
         for (VuforiaTrackable trackable : allTrackables) {
 
