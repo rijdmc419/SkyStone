@@ -316,8 +316,9 @@ public class SensorLib {
         }
     }
 
-    // use a set of motor encoders and gyro to track absolute field position
-    // assumes normal drive (not Mecanum or X-drive, which requires additional logic to handle sideways movement)
+    // use a set of motor encoders and gyro to track absolute field position --
+    // this version supports normal, Mecanum and X-drives
+    // assumes motors in order fr, br, fl, bl
     public static class EncoderGyroPosInt extends SensorLib.PositionIntegrator {
         OpMode mOpMode;
         HeadingSensor mGyro;
@@ -329,72 +330,50 @@ public class SensorLib {
         int mCountsPerRev;
         double mWheelDiam;
 
+        public enum DriveType { NORMAL, MECANUM, XDRIVE };
+        DriveType mDriveType = DriveType.NORMAL;
+
+        // transform from wheel distance to robot movement for various drive types
+        double mTWR[][];
+
+        final double tWR_Normal[][] = new double[][] {
+                {0.25, 0.25, 0.25, 0.25},
+                {0.25, 0.25, 0.25, 0.25}
+        };
+
+        final double tWR_Mecanum[][] = new double[][] {
+                {0.25, -0.25, 0.25, -0.25},
+                {0.25, 0.25, 0.25, 0.25}
+        };
+
+        final double sqrt2 = Math.sqrt(2);
+        final double tWR_XDrive[][] = new double[][] {
+            {0.25*sqrt2, -0.25*sqrt2, 0.25*sqrt2, -0.25*sqrt2},
+            {0.25*sqrt2, 0.25*sqrt2, 0.25*sqrt2, 0.25*sqrt2}
+        };
+
+        // this ctor is for backward compatibility -- defaults to DriveType.NORMAL
         public EncoderGyroPosInt(OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
         {
             super(initialPosn);
-            mOpMode = opmode;
-            mGyro = gyro;
-            mEncoderMotors = encoderMotors;
-            mFirstLoop = true;
-            mCountsPerRev = countsPerRev;
-            mWheelDiam = wheelDiam;
-            mEncoderPrev = new int[encoderMotors.length];
+            commonCtor(DriveType.NORMAL, opmode, gyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
         }
 
-        public boolean loop() {
-            // get initial encoder value
-            if (mFirstLoop) {
-                for (int i=0; i<mEncoderMotors.length; i++)
-                    mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
-                mFirstLoop = false;
-            }
-
-            // get current encoder values and compute average delta since last read
-            int encoderDist = 0;
-            for (int i=0; i<mEncoderMotors.length; i++) {
-                int encoder = mEncoderMotors[i].getCurrentPosition();
-                encoderDist += encoder - mEncoderPrev[i];
-                mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
-            }
-            encoderDist /= mEncoderMotors.length;
-
-            // get bearing from IMU gyro
-            double imuBearingDeg = mGyro.getHeading();
-
-            // update accumulated field position
-            double dist = (encoderDist * mWheelDiam * Math.PI)/mCountsPerRev;
-            this.move(dist, imuBearingDeg);
-
-            if (mOpMode != null) {
-                mOpMode.telemetry.addData("EGPI position", String.format("%.2f", this.getX()) + ", " + String.format("%.2f", this.getY()));
-            }
-
-            return true;
-        }
-
-        public HeadingSensor getGyro() {
-            return mGyro;
-        }
-    }
-
-    // use a set of motor encoders and gyro to track absolute field position --
-    // this version supports Mecanum and X-drives, which require additional logic to handle sideways movement
-    public static class MecanumEncoderGyroPosInt extends SensorLib.PositionIntegrator {
-        OpMode mOpMode;
-        HeadingSensor mGyro;
-        DcMotor[] mEncoderMotors;    // set of motors whose encoders we will average to get net movement
-
-        int mEncoderPrev[];		// previous readings of motor encoders
-        boolean mFirstLoop;
-
-        int mCountsPerRev;
-        double mWheelDiam;
-
-        boolean mIsXDrive = false;
-
-        public MecanumEncoderGyroPosInt(OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
+        // this ctor is for uses that want to specify the DriveType
+        public EncoderGyroPosInt(DriveType type, OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
         {
             super(initialPosn);
+            commonCtor(type, opmode, gyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+        }
+
+        private void commonCtor(DriveType type, OpMode opmode, HeadingSensor gyro, DcMotor[] encoderMotors, int countsPerRev, double wheelDiam, Position initialPosn)
+        {
+            mDriveType = type;
+            switch (mDriveType) {
+                case NORMAL:  mTWR = tWR_Normal; break;
+                case MECANUM: mTWR = tWR_Mecanum; break;
+                case XDRIVE:  mTWR = tWR_XDrive; break;
+            }
             mOpMode = opmode;
             mGyro = gyro;
             mEncoderMotors = encoderMotors;
@@ -403,9 +382,6 @@ public class SensorLib {
             mWheelDiam = wheelDiam;
             mEncoderPrev = new int[encoderMotors.length];
         }
-
-        // set this true for XDrive (vs. regular Mecanum drive)
-        public void setIsXDrive(boolean x) { mIsXDrive = x; }
 
         public boolean loop() {
             // get initial encoder value
@@ -430,23 +406,13 @@ public class SensorLib {
 
             // compute robot motion in relative x (across) and y(along) directions for Mecanum or X-drive
             double[] robotDeltaPos = new double[] {0,0};
-            double tWR[][] = new double[][] {
-                    {0.25, -0.25, 0.25, -0.25},
-                    {0.25, 0.25, 0.25, 0.25}
-            };
             for (int i=0; i<2; i++){
                 for (int j = 0; j<4; j++){
-                    robotDeltaPos[i] += tWR[i][j] * dist[j];
+                    robotDeltaPos[i] += mTWR[i][j] * dist[j];
                 }
             }
             double dxR = robotDeltaPos[0];
             double dyR = robotDeltaPos[1];
-
-            // each wheel rotation moves the bot further with X-drive
-            if (mIsXDrive) {
-                dxR *= Math.sqrt(2);
-                dyR *= Math.sqrt(2);
-            }
 
             // get bearing from IMU gyro
             double imuBearingDeg = mGyro.getHeading();
