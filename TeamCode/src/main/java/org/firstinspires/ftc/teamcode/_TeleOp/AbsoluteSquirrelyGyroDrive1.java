@@ -122,13 +122,16 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 	@Override
 	public void loop() {
 
-		// motion direction is on the left stick
-		float dx = gamepad1.left_stick_x;
-		float dy = -gamepad1.left_stick_y;	// y is reversed :(
+		// motion direction is on the right stick
+		float dx = gamepad1.right_stick_x;
+		float dy = -gamepad1.right_stick_y;	// y is reversed :(
 
 		// power is the magnitude of the direction vector
 		double power = Math.sqrt(dx*dx + dy*dy);
 		mStep.setPower((float) power);
+
+		// make sure we can rotate even if we're not moving
+		mStep.setMaxPower((float) 1.0);
 
 		// we don't have a valid direction when inputs are "zero"
 		final double MIN_INPUT = 0.1;
@@ -139,17 +142,32 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 			mStep.setDirection((float) direction);
 		}
 
-		// vehicle heading (orientation) is on the right stick
-		float hx = gamepad1.right_stick_x;
-		float hy = -gamepad1.right_stick_y;    // y is reversed :(
+		// vehicle heading (orientation) is on the left stick (near the dpad, which also controls heading)
+		float hx = gamepad1.left_stick_x;
+		float hy = -gamepad1.left_stick_y;    // y is reversed :(
 
+		double heading = 0;
+		boolean setHeading = false;
 		double hMag = Math.sqrt(hx*hx + hy*hy);
 		if (hMag > MIN_INPUT) {
 			// direction angle of stick >> the direction we want to face
-			double heading = Math.atan2(-hx, hy);    // stick angle: zero = +y, positive CCW, range +-pi
+			heading = Math.atan2(-hx, hy);    // stick angle: zero = +y, positive CCW, range +-pi
 			heading *= 180.0 / Math.PI;        // radians to degrees
-			mStep.setHeading((float) heading);
+			setHeading = true;
 		}
+
+		// also allow inputting of orientation on 8-way pad
+		if (gamepad1.dpad_up) { heading = 0; setHeading = true; }
+		if (gamepad1.dpad_right) { heading = -90; setHeading = true; }
+		if (gamepad1.dpad_down) { heading = 180; setHeading = true; }
+		if (gamepad1.dpad_left) { heading = 90; setHeading = true; }
+		if (gamepad1.dpad_up && gamepad1.dpad_right) { heading = -45; setHeading = true; }
+		if (gamepad1.dpad_down && gamepad1.dpad_right) { heading = -135; setHeading = true; }
+		if (gamepad1.dpad_down && gamepad1.dpad_left) { heading = 135; setHeading = true; }
+		if (gamepad1.dpad_up && gamepad1.dpad_left) { heading = 45; setHeading = true; }
+
+		if (setHeading)
+			mStep.setHeading((float) heading);
 
 		// run the control step
 		mStep.loop();
