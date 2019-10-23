@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode._Test._Drive;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.vuforia.TrackableResult;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.HeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Libs.VuforiaLib_SkyStone;
 
 import java.util.ArrayList;
 
@@ -92,6 +94,23 @@ public class SkystoneAutoBlue1 extends OpMode {
             // run the EncoderGyroPosInt to update its position based on encoders and gyro
             mPosInt.loop();
 
+            // update Vuforia info and, if we have valid location data, update the position integrator with it
+            mVLib.loop(true);       // update Vuforia location info
+
+            // don't believe Vuforia data if we're currently turning (blurry image?)
+            float angVel = mPosInt.getGyro().getHeadingVelocity();	// in deg/sec
+            boolean turningTooFast = Math.abs(angVel) > 10.0;
+
+            // if we have Vuforia location data, update the position integrator from it.
+            // use STATUS and STATUS_INFO associated with the sample to decide how much to believe it.
+            if (mVLib.haveLocation() && mVLib.getTrackableStatusInfo() == TrackableResult.STATUS_INFO.NORMAL && !turningTooFast) {
+                if (mVLib.getTrackableStatus() == TrackableResult.STATUS.TRACKED)
+                    mPosInt.setPosition(mVLib.getFieldPosition());
+                else
+                if (mVLib.getTrackableStatus() == TrackableResult.STATUS.EXTENDED_TRACKED)
+                    mPosInt.setPosition(mVLib.getFieldPosition(), 0.5f);
+            }
+
             // update the SquirrelyGyroGuideStep direction to continue heading for the target
             // while maintaining the heading (orientation) given for this Step
             float direction = (float) HeadingToTarget(mTarget, mPosInt.getPosition());
@@ -153,6 +172,16 @@ public class SkystoneAutoBlue1 extends OpMode {
     SensorLib.EncoderGyroPosInt mPosInt;    // Encoder/gyro-based position integrator to keep track of where we are
     SensorLib.PIDAdjuster mPidAdjuster;     // for interactive adjustment of PID parameters
     RobotHardware rh;                       // standard hardware set for these tests
+    VuforiaLib_SkyStone mVLib;
+
+    /**
+     * Constructor
+     */
+    public SkystoneAutoBlue1() {
+        // override default init timeout to prevent timeouts while starting Vuforia on slow phones.
+        // need to do it here so it's in effect BEFORE init() is called.
+        this.msStuckDetectInit = 10000;
+    }
 
     @Override
     public void init() {
@@ -162,11 +191,12 @@ public class SkystoneAutoBlue1 extends OpMode {
         rh.init(this);
 
         // post instructions to console
-        telemetry.addData("PosIntDriveTestOp", "");
+        telemetry.addData("Skystone auto blue 1", "");
         telemetry.addData("requires Meccanum or X-drive", "");
         telemetry.addData("", "autonomous point to point");
         telemetry.addData("", "navigation using PositionIntegrator");
-        telemetry.addData("", "driven by motor encoders");
+        telemetry.addData("", "driven by motor encoders with ");
+        telemetry.addData("", "occasional Vuforia updates ");
 
         // create a PID controller for the sequence
         // parameters of the PID controller for this sequence - assumes 20-gear motors (fast)
@@ -188,9 +218,11 @@ public class SkystoneAutoBlue1 extends OpMode {
         Position initialPosn = new Position(DistanceUnit.INCH, -36.0, 63.0, 0.0, 0);
         SensorLib.EncoderGyroPosInt.DriveType dt = SensorLib.EncoderGyroPosInt.DriveType.XDRIVE;
                         // SensorLib.EncoderGyroPosInt.DriveType.MECANUM :
-                        // SensorLib.EncoderGyroPosInt.DriveType.NORMAL;
         mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
+        // Start up Vuforia
+        mVLib = new VuforiaLib_SkyStone();
+        mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
 
         // create an autonomous sequence with the steps to drive
         // several legs of a polygonal course ---
@@ -252,10 +284,15 @@ public class SkystoneAutoBlue1 extends OpMode {
         bDone = false;
     }
 
-    public void loop() {
-        // report elapsed time to test Suspend/Resume
-        telemetry.addData("elapsed time", this.getRuntime());
+    @Override public void start()
+    {
+        /** Start tracking the data sets we care about. */
+        mVLib.start();
+    }
 
+    public void loop() {
+
+        // optionally adjust PID for current robot configuration
         if (gamepad1.y)
             bSetup = true;      // Y button: enter "setup mode" using controller inputs to set Kp and Ki
         if (gamepad1.x)
@@ -274,6 +311,7 @@ public class SkystoneAutoBlue1 extends OpMode {
 
     public void stop() {
         super.stop();
+        mVLib.stop();
     }
 }
 
