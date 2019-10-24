@@ -1317,10 +1317,10 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
     // a Step that uses gyro input to stabilize the robot orientation while driving along a given absolute heading
@@ -1352,10 +1352,10 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
     // a Step that uses gyro input to stabilize the robot orientation while driving along a given relative heading
@@ -1394,10 +1394,10 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
 
