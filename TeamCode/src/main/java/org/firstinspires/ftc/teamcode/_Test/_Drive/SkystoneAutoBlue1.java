@@ -200,8 +200,8 @@ public class SkystoneAutoBlue1 extends OpMode {
 
         // create a PID controller for the sequence
         // parameters of the PID controller for this sequence - assumes 20-gear motors (fast)
-        float Kp = 0.02f;        // motor power proportional term correction per degree of deviation
-        float Ki = 0.025f;         // ... integrator term
+        float Kp = 0.01f;        // motor power proportional term correction per degree of deviation
+        float Ki = 0.01f;         // ... integrator term
         float Kd = 0;             // ... derivative term
         float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
         mPid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);    // make the object that implements PID control algorithm
@@ -216,8 +216,8 @@ public class SkystoneAutoBlue1 extends OpMode {
         // initial position and orientation of bot is along Blue wall near the red loading zone facing the Red side
         rh.mIMU.setHeadingOffset(180);  // initially bot is facing in (Vuforia) field -Y direction, where (for us) +Y is bearing zero
         Position initialPosn = new Position(DistanceUnit.INCH, -36.0, 63.0, 0.0, 0);
-        SensorLib.EncoderGyroPosInt.DriveType dt = SensorLib.EncoderGyroPosInt.DriveType.XDRIVE;
-                        // SensorLib.EncoderGyroPosInt.DriveType.MECANUM :
+        SensorLib.EncoderGyroPosInt.DriveType dt = //SensorLib.EncoderGyroPosInt.DriveType.XDRIVE;
+                        SensorLib.EncoderGyroPosInt.DriveType.MECANUM;
         mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
         // Start up Vuforia
@@ -226,8 +226,7 @@ public class SkystoneAutoBlue1 extends OpMode {
 
         // create an autonomous sequence with the steps to drive
         // several legs of a polygonal course ---
-        float movePower = 1.0f;
-        float turnPower = 1.0f;
+        float movePower = 0.4f;
 
         // create the root Sequence for this autonomous OpMode
         mSequence = new AutoLib.LinearSequence();
