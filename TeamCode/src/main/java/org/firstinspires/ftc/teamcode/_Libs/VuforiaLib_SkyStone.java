@@ -513,10 +513,17 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     {
         return getYaw();
     }
+
+    public float getHeadingVelocity()
+    {
+        return 0;
+    }
+
     public boolean haveHeading()
     {
         return (lastLocation != null);
     }
+
     public void setHeadingOffset(float offset) {}   // not used; Vuforia headings are field-absolute
 
     // implements LocationSensor interface

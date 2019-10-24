@@ -154,6 +154,11 @@ public class SensorLib {
             return heading;         // unlike Gyro interface, we return this as float, not int
         }
 
+        public float getHeadingVelocity()
+        {
+            return 0;
+        }
+
         public boolean haveHeading()
         {
             return !mGyro.isCalibrating();  // data is always available from this device once it's calibrated
@@ -224,6 +229,11 @@ public class SensorLib {
             float heading = Utils.wrapAngle(intZ + mHeadingOffset);  // add angle offset and wrap to [-180..180) range
 
             return heading;         // unlike Gyro interface, we return this as float, not int
+        }
+
+        public float getHeadingVelocity()
+        {
+            return 0;
         }
 
         public boolean haveHeading()
@@ -337,7 +347,7 @@ public class SensorLib {
         double mTWR[][];
 
         final double tWR_Normal[][] = new double[][] {
-                {0.25, 0.25, 0.25, 0.25},
+                {0, 0, 0, 0},
                 {0.25, 0.25, 0.25, 0.25}
         };
 
