@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 
 public class RobotHardware {
 
-    DcMotor[] mMotors;
-    BNO055IMUHeadingSensor mIMU;
+    public DcMotor[] mMotors;
+    public BNO055IMUHeadingSensor mIMU;
 
-    boolean init(OpMode opmode) {
+    public boolean init(OpMode opmode) {
         boolean bOkay = true;
         try {
             AutoLib.HardwareFactory mf = new AutoLib.RealHardwareFactory(opmode);
