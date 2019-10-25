@@ -44,6 +44,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /**
  * TeleOp Mode
@@ -56,15 +57,8 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 //@Disabled
 public class TankDrivePosInt extends OpMode {
 
-	DcMotor motorFrontRight;
-	DcMotor motorFrontLeft;
-	DcMotor motorBackRight;
-	DcMotor motorBackLeft;
-
 	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
-	BNO055IMUHeadingSensor mGyro;           // gyro to use for heading information
-
-	boolean bDebug = false;
+	RobotHardware rh;
 
 	/**
 	 * Constructor
@@ -81,40 +75,17 @@ public class TankDrivePosInt extends OpMode {
 	@Override
 	public void init() {
 
-		/*
-		 * For this test, we assume the following,
-		 *   There are four motors
-		 *   "fl" and "bl" are front and back left wheels
-		 *   "fr" and "br" are front and back right wheels
-		 */
-		try {
-			motorFrontRight = hardwareMap.dcMotor.get("fr");
-			motorFrontLeft = hardwareMap.dcMotor.get("fl");
-			motorBackRight = hardwareMap.dcMotor.get("br");
-			motorBackLeft = hardwareMap.dcMotor.get("bl");
-			motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
-			motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-		}
-		catch (IllegalArgumentException iax) {
-			bDebug = true;
-		}
-
-		// on Ratbot, only two motor encoders are hooked up
-		DcMotor[] encoderMotors = new DcMotor[2];
-		encoderMotors[0] = motorFrontLeft;
-		encoderMotors[1] = motorBackRight;
-
-		// get hardware IMU and wrap gyro in HeadingSensor object usable below
-		mGyro = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
-		mGyro.init(7);  // orientation of REV hub in my ratbot
-		mGyro.setDegreesPerTurn(355.0f);     // appears that's what my IMU does ...
+		// get hardware
+		rh = new RobotHardware();
+		rh.init(this);
 
 		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
 		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
 		double wheelDiam = 4.0;		    // wheel diameter (in)
+		float fieldScale = 0.25f;		// scale factor to correct for only 2 encoders being hooked up
 		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
 		// example starting position: at origin of field
-		mPosInt = new SensorLib.EncoderGyroPosInt(this, mGyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam/fieldScale, initialPosn);
 	}
 
 	/*
@@ -141,11 +112,11 @@ public class TankDrivePosInt extends OpMode {
 		right = (float)scaleInput(right) * scale;
 
 		// write the values to the motors - for now, front and back motors on each side are set the same
-		if (!bDebug) {
-			motorFrontRight.setPower(right);
-			motorBackRight.setPower(right);
-			motorFrontLeft.setPower(left);
-			motorBackLeft.setPower(left);
+		{
+			rh.mMotors[0].setPower(right);
+			rh.mMotors[1].setPower(right);
+			rh.mMotors[2].setPower(left);
+			rh.mMotors[3].setPower(left);
 		}
 
 		// update position estimate using motor encoders and gyro

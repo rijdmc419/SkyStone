@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /*
  * TeleOp Mode
@@ -54,18 +55,8 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 //@Disabled
 public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 
-	DcMotor motorFrontRight;
-	DcMotor motorFrontLeft;
-	DcMotor motorBackRight;
-	DcMotor motorBackLeft;
-
-	boolean bDebug = false;
-
 	AutoLib.SquirrelyGyroTimedDriveStep mStep;
-
-	BNO055IMUHeadingSensor mIMU;
-
-	DcMotor mMotors[];
+	RobotHardware rh;
 
 	/**
 	 * Constructor
@@ -78,40 +69,13 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 	@Override
 	public void init() {
 
-		/*
-		 * For this test, we assume the following,
-		 *   There are four motors
-		 *   "fl" and "bl" are front and back left wheels
-		 *   "fr" and "br" are front and back right wheels
-		 */
-		try {
-			AutoLib.HardwareFactory mf = null;
-			final boolean debug = true;
-			if (debug)
-				mf = new AutoLib.TestHardwareFactory(this);
-			else
-				mf = new AutoLib.RealHardwareFactory(this);
-
-			// get the motors: depending on the factory we created above, these may be
-			// either dummy motors that just log data or real ones that drive the hardware
-			// assumed order is fr, br, fl, bl
-			mMotors = new DcMotor[4];
-			mMotors[0] = mf.getDcMotor("fr");
-			mMotors[1] = mf.getDcMotor("br");
-			(mMotors[2] = mf.getDcMotor("fl")).setDirection(DcMotor.Direction.REVERSE);
-			(mMotors[3] = mf.getDcMotor("bl")).setDirection(DcMotor.Direction.REVERSE);
-
-			// get hardware IMU and wrap gyro in HeadingSensor object usable below
-			mIMU = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
-			mIMU.init(7);  // orientation of REV hub in my ratbot
-		}
-		catch (IllegalArgumentException iax) {
-			bDebug = true;
-		}
+		// get hardware
+		rh = new RobotHardware();
+		rh.init(this);
 
 		// set initial orientation of bot relative to driver (default is 0 degrees == N)
 		float initialHeading = 0.0f;	// N
-		mIMU.setHeadingOffset(initialHeading);
+		rh.mIMU.setHeadingOffset(initialHeading);
 
 		// post instructions to console
 		telemetry.addData("AbsoluteSquirrelyGyroDrive1", "");
@@ -120,8 +84,15 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 		telemetry.addData("right stick", " motion on field");
 		telemetry.addData("initial heading", initialHeading);
 
+		// construct a PID controller for correcting heading errors
+		final float Kp = 0.01f;        // degree heading proportional term correction per degree of deviation
+		final float Ki = 0.01f;        // ... integrator term
+		final float Kd = 0.0f;         // ... derivative term
+		final float KiCutoff = 3.0f;   // maximum angle error for which we update integrator
+		SensorLib.PID pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+
 		// create a Step that we will use in teleop mode
-		mStep = new AutoLib.SquirrelyGyroTimedDriveStep(this, 0, 0, mIMU, null, mMotors, 0, 10000, false);
+		mStep = new AutoLib.SquirrelyGyroTimedDriveStep(this, 0, 0, rh.mIMU, pid, rh.mMotors, 0, 10000, false);
 	}
 
 
