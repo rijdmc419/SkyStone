@@ -343,6 +343,8 @@ public class SensorLib {
         public enum DriveType { NORMAL, MECANUM, XDRIVE };
         DriveType mDriveType = DriveType.NORMAL;
 
+        double mFactor = 1.0;   // fudge factor to correct for <4 motors in Normal drive only
+
         // transform from wheel distance to robot movement for various drive types
         double mTWR[][];
 
@@ -391,6 +393,8 @@ public class SensorLib {
             mCountsPerRev = countsPerRev;
             mWheelDiam = wheelDiam;
             mEncoderPrev = new int[encoderMotors.length];
+            if (type == DriveType.NORMAL)       // we try to deal with <4 encoders in Normal mode only
+                mFactor = 4.0/encoderMotors.length;
         }
 
         public boolean loop() {
@@ -421,8 +425,8 @@ public class SensorLib {
                     robotDeltaPos[i] += mTWR[i][j] * dist[j];
                 }
             }
-            double dxR = robotDeltaPos[0];
-            double dyR = robotDeltaPos[1];
+            double dxR = robotDeltaPos[0] * mFactor;    // adjust for possible <4 encoders in Normal mode
+            double dyR = robotDeltaPos[1] * mFactor;
 
             // get bearing from IMU gyro
             double imuBearingDeg = mGyro.getHeading();
