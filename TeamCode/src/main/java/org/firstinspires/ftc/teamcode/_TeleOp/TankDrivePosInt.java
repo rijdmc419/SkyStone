@@ -82,7 +82,7 @@ public class TankDrivePosInt extends OpMode {
 		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
 		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
 		double wheelDiam = 4.0;		    // wheel diameter (in)
-		float fieldScale = 0.25f;		// scale factor to correct for only 2 encoders being hooked up
+		float fieldScale = 0.5f;		// scale factor to correct for only 2 encoders being hooked up
 		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
 		// example starting position: at origin of field
 		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam/fieldScale, initialPosn);
