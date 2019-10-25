@@ -46,9 +46,18 @@ import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 /*
  * TeleOp Mode
  * Enables control of the robot via the gamepad such that the robot moves in the
- * absolute direction and speed indicated by the left joystick, assuming the game console is
+ * absolute direction and speed indicated by the right joystick, assuming the game console is
  * aligned with the robot when the mode is initiated, and the robot maintains an orientation
- * aligned with the direction of the right joystick..
+ * aligned with the direction of the last left joystick or dpad input.
+ *
+ * We delegate the work of actually controlling the robot to a Step in Autolib that already does
+ * what we want -- a SquirrelyGyroTimedDriveStep drives the robot for a given time along a
+ * given direction while keeping the robot pointed at a given heading. See comments in Autolib for
+ * more details. In this case, rather than using the Step in an autonomous sequence,
+ * our opmode's loop() function updates the power, direction, and heading of the Step from the
+ * current gamepad inputs and then runs its loop() function to let it compute the required motor power
+ * settings and update the motors, just as it would in an autonomous sequence. We set the time of the
+ * Step to a large value (10000) so it won't terminate on its own while we're driving.
  */
 
 @TeleOp(name="AbsoluteSquirrelyGyroDrive1", group="Test")  // @Autonomous(...) is the other common choice

@@ -49,8 +49,9 @@ import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 /**
  * TeleOp Mode
  * <p>
- * Enables control of the robot via the gamepad
+ * Enables tank-drive style control of the robot via the gamepad
  * Uses position integration to estimate where we are on the field
+ * and reports that back to the driver station display.
  */
 
 @TeleOp(name="TankDrive PosInt Encoder", group="Test")  // @Autonomous(...) is the other common choice
@@ -60,18 +61,8 @@ public class TankDrivePosInt extends OpMode {
 	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 	RobotHardware rh;
 
-	/**
-	 * Constructor
-	 */
-	public TankDrivePosInt() {
+	public TankDrivePosInt() { }
 
-	}
-
-	/*
-	 * Code to run when the op mode is first enabled goes here
-	 * 
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
-	 */
 	@Override
 	public void init() {
 
@@ -79,13 +70,17 @@ public class TankDrivePosInt extends OpMode {
 		rh = new RobotHardware();
 		rh.init(this);
 
+		// on Ratbot, only two motor encoders are currently hooked up: [1]br, [3]bl
+		DcMotor[] encoderMotors = new DcMotor[2];
+		encoderMotors[0] = rh.mMotors[1];
+		encoderMotors[1] = rh.mMotors[3];
+
 		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
+		// use constructor that defaults the wheel type to Normal (not Mecanum or X-Drive)
 		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
 		double wheelDiam = 4.0;		    // wheel diameter (in)
-		float fieldScale = 0.5f;		// scale factor to correct for only 2 encoders being hooked up
-		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
-		// example starting position: at origin of field
-		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam/fieldScale, initialPosn);
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);  // example starting position: at origin of field
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
 	}
 
 	/*
@@ -111,13 +106,11 @@ public class TankDrivePosInt extends OpMode {
 		left =  (float)scaleInput(left) * scale;
 		right = (float)scaleInput(right) * scale;
 
-		// write the values to the motors - for now, front and back motors on each side are set the same
-		{
-			rh.mMotors[0].setPower(right);
-			rh.mMotors[1].setPower(right);
-			rh.mMotors[2].setPower(left);
-			rh.mMotors[3].setPower(left);
-		}
+		// write the values to the motors - for tank drive, front and back motors on each side are set the same
+		rh.mMotors[0].setPower(right);
+		rh.mMotors[1].setPower(right);
+		rh.mMotors[2].setPower(left);
+		rh.mMotors[3].setPower(left);
 
 		// update position estimate using motor encoders and gyro
 		mPosInt.loop();
@@ -129,7 +122,6 @@ public class TankDrivePosInt extends OpMode {
 		telemetry.addData("left pwr", String.format("%.2f", left));
 		telemetry.addData("right pwr", String.format("%.2f", right));
 		telemetry.addData("gamepad1", gamepad1);
-		telemetry.addData("gamepad2", gamepad2);
 		telemetry.addData("position", String.format("%.2f", mPosInt.getX())+", " + String.format("%.2f", mPosInt.getY()));
 	}
 

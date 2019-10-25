@@ -35,6 +35,8 @@ public class RobotHardware {
             // get hardware IMU and wrap gyro in HeadingSensor object usable below
             mIMU = new BNO055IMUHeadingSensor(opmode.hardwareMap.get(BNO055IMU.class, "imu"));
             mIMU.init(7);  // orientation of REV hub in my ratbot
+            mIMU.setDegreesPerTurn(355.0f);  // appears that's what my IMU does ... set this for your IMU
+
         }
         catch (IllegalArgumentException iax) {
             bOkay = false;

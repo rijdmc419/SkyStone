@@ -33,44 +33,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package org.firstinspires.ftc.teamcode._TeleOp;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 import com.vuforia.TrackableResult;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.VuforiaLib_SkyStone;
+import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /**
  * TeleOp Mode
  *
  * Enables control of the robot via the gamepad
- * Uses Vuforia to update PositionIntegrator estimate where we are on the field
+ * Like TankDrivePosInt, uses position integration to estimate where we are on the field
+ * plus uses Vuforia data, when available, to update that estimate,
+ * and reports that back to the driver station display.
  */
 
 @TeleOp(name="TankDrive Vuforia", group="Test")  // @Autonomous(...) is the other common choice
 //@Disabled
 public class TankDriveVuforia extends OpMode {
 
-	DcMotor motorFrontRight;
-	DcMotor motorFrontLeft;
-	DcMotor motorBackRight;
-	DcMotor motorBackLeft;
-
 	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
-	BNO055IMUHeadingSensor mGyro;           // gyro to use for heading information
-
 	VuforiaLib_SkyStone mVLib;
-
-	boolean bDebug = false;
-
+	RobotHardware rh;                       // standard hardware set for these tests
 
 	/**
 	 * Constructor
@@ -88,45 +78,24 @@ public class TankDriveVuforia extends OpMode {
 	 */
 	@Override
 	public void init() {
-
-		/*
-		 * For this test, we assume the following,
-		 *   There are four motors
-		 *   "fl" and "bl" are front and back left wheels
-		 *   "fr" and "br" are front and back right wheels
-		 */
-		try {
-			motorFrontRight = hardwareMap.dcMotor.get("fr");
-			motorFrontLeft = hardwareMap.dcMotor.get("fl");
-			motorBackRight = hardwareMap.dcMotor.get("br");
-			motorBackLeft = hardwareMap.dcMotor.get("bl");
-			motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
-			motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-		}
-		catch (IllegalArgumentException iax) {
-			bDebug = true;
-		}
+		// get hardware
+		rh = new RobotHardware();
+		rh.init(this);
 
 		// Start up Vuforia
 		mVLib = new VuforiaLib_SkyStone();
 		mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
 
-		// on Ratbot, only two motor encoders are hooked up
+		// on Ratbot, only two motor encoders are currently hooked up: [1]br, [3]bl
 		DcMotor[] encoderMotors = new DcMotor[2];
-		encoderMotors[0] = motorFrontLeft;
-		encoderMotors[1] = motorBackRight;
-
-		// get hardware IMU and wrap gyro in HeadingSensor object usable below
-		mGyro = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
-		mGyro.init(7);  // orientation of REV hub in my ratbot
-		mGyro.setDegreesPerTurn(355.0f);     // appears that's what my IMU does ...
+		encoderMotors[0] = rh.mMotors[1];
+		encoderMotors[1] = rh.mMotors[3];
 
 		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
 		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
 		double wheelDiam = 4.0;		    // wheel diameter (in)
-		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
-		// example starting position: at origin of field
-		mPosInt = new SensorLib.EncoderGyroPosInt(this, mGyro, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);  // example starting position: at origin of field
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
 	}
 
 	@Override public void start()
@@ -158,13 +127,11 @@ public class TankDriveVuforia extends OpMode {
 		left =  (float)scaleInput(left) * scale;
 		right = (float)scaleInput(right) * scale;
 
-		// write the values to the motors - for now, front and back motors on each side are set the same
-		if (!bDebug) {
-			motorFrontRight.setPower(right);
-			motorBackRight.setPower(right);
-			motorFrontLeft.setPower(left);
-			motorBackLeft.setPower(left);
-		}
+		// write the values to the motors - for tank drive, front and back motors on each side are set the same
+		rh.mMotors[0].setPower(right);
+		rh.mMotors[1].setPower(right);
+		rh.mMotors[2].setPower(left);
+		rh.mMotors[3].setPower(left);
 
 		// update position estimate using motor encoders and gyro
 		mPosInt.loop();
@@ -173,7 +140,7 @@ public class TankDriveVuforia extends OpMode {
 		mVLib.loop(true);       // update Vuforia location info
 
 		// don't believe Vuforia data if we're currently turning (blurry image?)
-		float angVel = mGyro.getHeadingVelocity();	// in deg/sec
+		float angVel = rh.mIMU.getHeadingVelocity();	// in deg/sec
 		boolean turningTooFast = Math.abs(angVel) > 10.0;
 
 		// if we have Vuforia location data, update the position integrator from it.

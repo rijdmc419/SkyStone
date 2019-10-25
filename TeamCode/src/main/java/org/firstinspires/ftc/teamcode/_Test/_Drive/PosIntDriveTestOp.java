@@ -177,18 +177,15 @@ public class PosIntDriveTestOp extends OpMode {
         // create a PID adjuster for interactive tweaking (see loop() below)
         mPidAdjuster = new SensorLib.PIDAdjuster(this, mPid, gamepad1);
 
-        // on Ratbot, only two motor encoders are hooked up: [1]br, [2]fl
+        // on Ratbot, only two motor encoders are currently hooked up: [1]br, [3]bl
         DcMotor[] encoderMotors = new DcMotor[2];
         encoderMotors[0] = rh.mMotors[1];
-        encoderMotors[1] = rh.mMotors[2];
-
-        rh.mIMU.setDegreesPerTurn(355.0f);     // appears that's what my IMU does ...
+        encoderMotors[1] = rh.mMotors[3];
 
         // create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
         int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
         double wheelDiam = 4.0;		    // wheel diameter (in)
-        Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
-        // example starting position: at origin of field
+        Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0); // example starting position: at origin of field
         mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
 
 
@@ -200,30 +197,27 @@ public class PosIntDriveTestOp extends OpMode {
         // create the root Sequence for this autonomous OpMode
         mSequence = new AutoLib.LinearSequence();
 
-        // add a bunch of timed "legs" to the sequence - use Gyro heading convention of positive degrees CW from initial heading
+        // add a bunch of movements to the sequence
         float tol = 1.0f;   // tolerance in inches
         float timeout = 2.0f;   // seconds
 
-        // add a bunch of position integrator "legs" to the sequence -- uses absolute field coordinate system in inches
+        // these position integrator steps use the encoder-based position integrator and IMU-gyro to move
+        // the robot to a sequence of positions specified in absolute field coordinate system in inches
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,                   // do this move backwards!
+        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        //mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-        //        new Position(DistanceUnit.INCH, -48, -48, 0., 0), tol, false));
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
 
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,
+        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        //mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
-        //        new Position(DistanceUnit.INCH, -48, -48, 0., 0), tol, false));
         mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
 
