@@ -29,10 +29,15 @@ public class EncodersTest extends OpMode {
             mMotors[i] = mf.getDcMotor(motorNames[i]);
             mMotors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+
+        // FYI: "reversed" motors return counts with opposite sense
+        // e.g. mMotors[1].setDirection(DcMotor.Direction.REVERSE);
+        // makes left-side motor return positive counts going forward;
     }
 
     public void loop() {
         // log data to DriverStation
+        telemetry.addData("raw counter data -- not reversed", "");
         for (int i = 0; i < mMotors.length; i++)
             telemetry.addData(motorNames[i], mMotors[i].getCurrentPosition());
     }
