@@ -29,7 +29,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode._TeleOp;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -46,7 +46,6 @@ import org.firstinspires.ftc.teamcode._Libs.AutoLib;
  * Thanks Paul
  */
 @TeleOp(name="Actually Working TeleOp Mode")  // @Autonomous(...) is the other common choice
-@Disabled
 public class SquirrelyDrive1Daniel extends OpMode {
 
 	DcMotor motorFrontRight;
