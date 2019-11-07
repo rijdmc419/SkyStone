@@ -69,6 +69,7 @@ public class TankDriveVuforia extends OpMode {
 		// override default init timeout to prevent timeouts while starting Vuforia on slow phones.
 		// need to do it here so it's in effect BEFORE init() is called.
 		this.msStuckDetectInit = 10000;
+		this.msStuckDetectStop = 10000;
 	}
 
 	/*
