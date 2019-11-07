@@ -97,9 +97,11 @@ public class SquirrelyDrive2 extends OpMode {
 		xLeft =  (float)scaleInput(xLeft);
 		xRight = (float)scaleInput(xRight);
 
-		// combine turning and squirrely drive inputs and
-		double fr = Range.clip(right+xRight, -1, 1);
-		double br = Range.clip(right-xRight, -1, 1);
+		// combine turning and squirrely drive inputs assuming "standard" arrangement
+		// of mecanum wheels with roller axles pointing toward bot center
+		// which is equivalent to X-drive.
+		double fr = Range.clip(right-xRight, -1, 1);
+		double br = Range.clip(right+xRight, -1, 1);
 		double fl = Range.clip(left+xLeft, -1, 1);
 		double bl = Range.clip(left-xLeft, -1, 1);
 

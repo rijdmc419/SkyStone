@@ -104,23 +104,25 @@ public class SquirrelyDrive1 extends OpMode {
 		double theta = Math.atan2(-x, y);	// stick angle: zero = +y, positive CCW, range +-pi
 		double heading = theta * 180.0/Math.PI;		// radians to degrees
 
-		// compute front and back wheel relative speeds needed to go in desired direction
+		// compute left-side front and back wheel relative speeds needed to go in desired direction
 		AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(heading);
-		double front = mp.Front();
-		double back = mp.Back();
+		double rightFacing = mp.RightFacing();
+		double leftFacing = mp.LeftFacing();
 
 		// power is the magnitude of the stick vector
 		double power = Math.sqrt(x*x + y*y);
 
 		// scale the values by the desired power
-		front *= power;
-		back *= power;
+		rightFacing *= power;
+		leftFacing *= power;
 
-		// combine turning and squirrely drive inputs and
-		double fr = Range.clip(front+right, -1, 1);
-		double br = Range.clip(back+right, -1, 1);
-		double fl = Range.clip(front+left, -1, 1);
-		double bl = Range.clip(back+left, -1, 1);
+		// combine turning and squirrely drive inputs assuming "standard" arrangement
+		// of mecanum wheels with roller axles pointing toward bot center
+		// which is equivalent to X-drive.
+		double fr = Range.clip(leftFacing+right, -1, 1);
+		double br = Range.clip(rightFacing+right, -1, 1);
+		double fl = Range.clip(rightFacing+left, -1, 1);
+		double bl = Range.clip(leftFacing+left, -1, 1);
 
 		// write the values to the motors
 		rh.mMotors[0].setPower(fr);
