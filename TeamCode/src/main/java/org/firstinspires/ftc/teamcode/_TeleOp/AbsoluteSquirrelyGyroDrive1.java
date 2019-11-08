@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Libs.ToggleButton;
 import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /*
@@ -66,6 +67,8 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 
 	AutoLib.SquirrelyGyroTimedDriveStep mStep;
 	RobotHardware rh;
+	ToggleButton lb;
+	ToggleButton rb;
 
 	/**
 	 * Constructor
@@ -85,6 +88,10 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 		// set initial orientation of bot relative to driver (default is 0 degrees == N)
 		float initialHeading = 0.0f;	// N
 		rh.mIMU.setHeadingOffset(initialHeading);
+
+		// initialize toggle buttons that will count gyro angle correction offset using lb and rb buttons on gamepad
+		lb = new ToggleButton(false,360, 0);
+		rb = new ToggleButton(false, 360, 0);
 
 		// post instructions to console
 		telemetry.addData("AbsoluteSquirrelyGyroDrive1", "");
@@ -112,6 +119,11 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 	 */
 	@Override
 	public void loop() {
+
+		// process gyro correction inputs on lb and rb buttons
+		lb.process(gamepad1.left_bumper);
+		rb.process(gamepad1.right_bumper);
+		rh.mIMU.setHeadingOffset(rb.value()-lb.value());
 
 		// motion direction is on the right stick
 		float dx = gamepad1.right_stick_x;
