@@ -1080,7 +1080,6 @@ public class AutoLib {
 
             // calculate powers of the 4 motors ---
             // for "standard" mecanum wheel arrangement (i.e. all roller axles pointing to bot center)
-            // mp pertains only to the left side, so we need to swap Front and Back on the right side.
             double pFR = mp.LeftFacing() * mPower - hdCorr;
             double pBR = mp.RightFacing() * mPower - hdCorr;
             double pFL = mp.RightFacing() * mPower + hdCorr;
@@ -1510,7 +1509,6 @@ public class AutoLib {
     // this function computes the relative front/back power settings needed to move along a given
     // heading, relative to the current orientation of the robot.
     // for "standard" mecanum wheel arrangement (i.e. all roller axles pointing to bot center)
-    // the result pertains only to the left side, so you should swap Front and Back on the right side.
     // i.e. "Front" (left) is a wheel whose rollers point to the right on the top of the wheel, while
     // "Back" (left) refers to a wheel whose rollers point to the left on the top of the wheel.
     public static MotorPowers GetSquirrelyWheelMotorPowers(
