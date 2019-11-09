@@ -58,7 +58,7 @@ public class SquirrelyDrive1Daniel extends OpMode {
 	/**
 	 * Constructor
 	 */
-	public SquirrelyDrive1() {
+	public SquirrelyDrive1Daniel() {
 
 	}
 
