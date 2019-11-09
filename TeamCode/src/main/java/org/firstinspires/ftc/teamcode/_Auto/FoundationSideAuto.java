@@ -29,7 +29,7 @@ public class FoundationSideAuto extends OpMode {
         //Which should be around 4pi inches or ~12.56637 inches
         seq = new AutoLib.LinearSequence();
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(6*inTravel), true)); //should travel 6 in
-        seq.add(new AutoLib.AzimuthDistanceDriveStep(this, -90f, x, y, motors, uniPow,,5f)); //maybe mark with the inTravel thing
+        //seq.add(new AutoLib.AzimuthDistanceDriveStep(this, -90f, x, y, motors, uniPow, d,5f)); //maybe mark with the inTravel thing
         //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep) //TODO: Get this to work, or see if there is something better for strafing
                                                              //TODO: Also setup a PID Loop and figure out how to use Gyro
         done = false;
