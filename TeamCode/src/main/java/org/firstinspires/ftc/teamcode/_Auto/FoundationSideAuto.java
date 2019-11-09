@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 @Autonomous(name="LM1 Foundation Side")
 public class FoundationSideAuto extends OpMode {
-    SkystoneHardware robot = new SkystoneHardware();
+    SkystoneHardware robot = new SkystoneHardware(); //get the robots hardware
     DcMotor motors[];
     AutoLib.Sequence seq;
     boolean done;
@@ -22,14 +22,14 @@ public class FoundationSideAuto extends OpMode {
         motors[0] = robot.fr;
         motors[1] = robot.br;
         motors[2] = robot.fl;
-        motors[3] = robot.bl;
-        //TODO: Test this at Friday's practice
-        double inTravel = 560/(4*(Math.PI)); //this should convert to inches //TODO: See if I need to change to 560*4*Math.PI
+        motors[3] = robot.bl; //makes motors
+        double inTravel = 560/(4*(Math.PI)); //this should convert to inches
         float uniPow = 0.33f; //for 20:1 motors
         //560 == 1 rotation of the wheel (I think?)
         //Which should be around 4pi inches or ~12.56637 inches
         seq = new AutoLib.LinearSequence();
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(6*inTravel), true)); //should travel 6 in
+        seq.add(new AutoLib.AzimuthDistanceDriveStep(this, -90f, x, y, motors, uniPow,,5f)); //maybe mark with the inTravel thing
         //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep) //TODO: Get this to work, or see if there is something better for strafing
                                                              //TODO: Also setup a PID Loop and figure out how to use Gyro
         done = false;
@@ -53,5 +53,5 @@ public class FoundationSideAuto extends OpMode {
     @Override
     public void stop(){
         super.stop();
-    }
+    } //stop but more
 }
