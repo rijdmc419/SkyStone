@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo servo;
+    Servo greg;
     boolean A=false;
     boolean whichA=false;
 
@@ -27,7 +27,7 @@ public class LM1TeleopSERVO extends OpMode{
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        servo = robot.servo;
+        greg = robot.greg;
     }
 
     @Override
@@ -91,10 +91,10 @@ public class LM1TeleopSERVO extends OpMode{
             A = false;
             whichA= !whichA;
             if(whichA){
-                servo.setPosition(0f); //down value
+                greg.setPosition(0f); //down value
             }
             else{
-                servo.setPosition(-1f); //up value start
+                greg.setPosition(-1f); //up value start
             }
         }
     }

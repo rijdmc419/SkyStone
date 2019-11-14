@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode._Auto;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
@@ -11,6 +13,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class FoundationSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware(); //get the robots hardware
     DcMotor motors[];
+    BNO055IMU gyr0;
     AutoLib.Sequence seq;
     boolean done;
 
@@ -23,6 +26,9 @@ public class FoundationSideAuto extends OpMode {
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl; //makes motors
+
+        gyr0 = robot.gyr0; //i got no clue what this does or if it works
+
         double inTravel = 560/(4*(Math.PI)); //this should convert to inches
         float uniPow = 0.33f; //for 20:1 motors
         //560 == 1 rotation of the wheel (I think?)
@@ -43,10 +49,13 @@ public class FoundationSideAuto extends OpMode {
 
     @Override
     public void loop(){
-        if (!done)
+        if (!done){
             done = seq.loop(); // returns true when we're done
-        else
+            telemetry.addData("Gyro: ", gyr0);
+        }
+        else{
             telemetry.addData("Sequence finished", "");
+        }
 
     }
 

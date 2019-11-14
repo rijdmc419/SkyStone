@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 
@@ -18,7 +19,8 @@ public class SkystoneHardware {
     public DcMotor bl = null;
     public DcMotor fr  = null;
     public DcMotor br = null;
-    public Servo servo = null;
+    public Servo greg = null;
+    public BNO055IMU gyr0 = null;
 
     HardwareMap hwMap = null;
 
@@ -31,7 +33,8 @@ public class SkystoneHardware {
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
 
-        servo = hwMap.get(Servo.class, "servo");
+        greg = hwMap.get(Servo.class, "greg");
+        gyr0 = hwMap.get(BNO055IMU.class, "gyr0");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
