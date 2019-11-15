@@ -1072,6 +1072,9 @@ public class AutoLib {
             // feed error through PID to get motor power value for heading correction
             float hdCorr = mPid.loop(error, (float) dt);
 
+            // limit heading correction to "full blast"
+            hdCorr = Range.clip(hdCorr, -1, 1);
+
             // relative direction we want to move is difference between requested absolute direction and CURRENT orientation
             float relDir = SensorLib.Utils.wrapAngle(mDirection - heading);
 
