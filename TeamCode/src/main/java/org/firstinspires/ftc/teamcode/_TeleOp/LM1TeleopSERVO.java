@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode._TeleOp;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,7 @@ public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
     Servo greg;
+    BNO055IMU gyr0;
     boolean A=false;
     boolean whichA=false;
 
@@ -28,6 +30,10 @@ public class LM1TeleopSERVO extends OpMode{
         motors[3] = robot.bl;
 
         greg = robot.greg;
+
+        gyr0 = robot.gyr0;
+        BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
+        gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
     }
 
     @Override
@@ -63,11 +69,13 @@ public class LM1TeleopSERVO extends OpMode{
         front *= power;
         back *= power;
 
-        front = front*front*front;
-        back = back*back*back;
-        left = left*left*left;
-        right = right*right*right;
+        //TODO: Test wether cubing the powers when we take them as inputs as oposed to here works.
+        //front = front*front*front;
+        //back = back*back*back;
+        //left = left*left*left;
+        //right = right*right*right;
 
+        //TODO: Also test these
         front *= uniPow;
         back *= uniPow;
         left *= uniPow;
@@ -83,6 +91,7 @@ public class LM1TeleopSERVO extends OpMode{
         motors[2].setPower(fl);
         motors[3].setPower(bl);
         telemetry.addData("", gamepad1);
+        telemetry.addData("Tempature: ", gyr0.getTemperature());
 
         if(gamepad2.a){
             A = true;

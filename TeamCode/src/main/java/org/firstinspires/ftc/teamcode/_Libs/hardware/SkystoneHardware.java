@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 
@@ -21,6 +22,7 @@ public class SkystoneHardware {
     public DcMotor br = null;
     public Servo greg = null;
     public BNO055IMU gyr0 = null;
+    public ColorSensor clrSnr = null;
 
     HardwareMap hwMap = null;
 
@@ -35,6 +37,7 @@ public class SkystoneHardware {
 
         greg = hwMap.get(Servo.class, "greg");
         gyr0 = hwMap.get(BNO055IMU.class, "gyr0");
+        clrSnr = hwMap.get(ColorSensor.class, "clrSnr");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);

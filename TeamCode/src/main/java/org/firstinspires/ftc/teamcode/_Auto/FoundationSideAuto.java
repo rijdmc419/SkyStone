@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode._Auto;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 @Autonomous(name="LM1 Foundation Side")
 public class FoundationSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware(); //get the robots hardware
+    ColorSensor clrSnr;
     DcMotor motors[];
     BNO055IMU gyr0;
     AutoLib.Sequence seq;
@@ -28,6 +30,12 @@ public class FoundationSideAuto extends OpMode {
         motors[3] = robot.bl; //makes motors
 
         gyr0 = robot.gyr0; //i got no clue what this does or if it works
+        BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
+        gParams.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        gParams.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
+
+        clrSnr = robot.clrSnr; //see the above comment
 
         double inTravel = 560/(4*(Math.PI)); //this should convert to inches
         float uniPow = 0.33f; //for 20:1 motors
@@ -51,7 +59,8 @@ public class FoundationSideAuto extends OpMode {
     public void loop(){
         if (!done){
             done = seq.loop(); // returns true when we're done
-            telemetry.addData("Gyro: ", gyr0);
+            telemetry.addData("Gyro: ", gyr0.getTemperature());
+            telemetry.addData("ClrSnr: ", clrSnr.argb());
         }
         else{
             telemetry.addData("Sequence finished", "");
