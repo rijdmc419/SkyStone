@@ -354,13 +354,13 @@ public class SensorLib {
         };
 
         final double tWR_Mecanum[][] = new double[][] {
-                {0.25, -0.25, 0.25, -0.25},
+                {-0.25, 0.25, 0.25, -0.25},
                 {0.25, 0.25, 0.25, 0.25}
         };
 
         final double sqrt2 = Math.sqrt(2);
         final double tWR_XDrive[][] = new double[][] {
-            {0.25*sqrt2, -0.25*sqrt2, 0.25*sqrt2, -0.25*sqrt2},
+            {-0.25*sqrt2, 0.25*sqrt2, 0.25*sqrt2, -0.25*sqrt2},
             {0.25*sqrt2, 0.25*sqrt2, 0.25*sqrt2, 0.25*sqrt2}
         };
 
