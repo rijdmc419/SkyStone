@@ -211,7 +211,7 @@ public class SkystoneAutoBlue1 extends OpMode {
         mPidAdjuster = new SensorLib.PIDAdjuster(this, mPid, gamepad1);
 
         // create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
-        int countsPerRev = 28*40;		// for 40:1 gearbox motor @ 28 counts/motorRev
+        int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
         double wheelDiam = 4.0;		    // wheel diameter (in)
 
         // initial position and orientation of bot is along Blue wall near the red loading zone facing the Red side
