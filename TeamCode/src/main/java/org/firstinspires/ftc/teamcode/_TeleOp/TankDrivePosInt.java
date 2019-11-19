@@ -70,17 +70,12 @@ public class TankDrivePosInt extends OpMode {
 		rh = new RobotHardware();
 		rh.init(this);
 
-		// on Ratbot, only two motor encoders are currently hooked up: [1]br, [3]bl
-		DcMotor[] encoderMotors = new DcMotor[2];
-		encoderMotors[0] = rh.mMotors[1];
-		encoderMotors[1] = rh.mMotors[3];
-
 		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
 		// use constructor that defaults the wheel type to Normal (not Mecanum or X-Drive)
 		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
 		double wheelDiam = 4.0;		    // wheel diameter (in)
 		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);  // example starting position: at origin of field
-		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+		mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 	}
 
 	/*
