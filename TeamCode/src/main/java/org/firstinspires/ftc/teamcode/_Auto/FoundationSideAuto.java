@@ -51,7 +51,7 @@ public class FoundationSideAuto extends OpMode {
                                                              //TODO: Also setup a PID Loop and figure out how to use Gyro
 
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(1.5f*inTile*inTravel), false)); //move forward 1.5 tiles
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560, -560, true));//rotate 90deg right
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, -560, 560, true));//rotate 90deg right
         //move forward 1 tile
         //rotate 90d left
         //move forward .5 tile
