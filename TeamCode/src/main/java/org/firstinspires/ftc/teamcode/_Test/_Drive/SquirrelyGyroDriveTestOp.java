@@ -34,7 +34,7 @@ public class SquirrelyGyroDriveTestOp extends OpMode {
 
         // create an autonomous sequence with the steps to drive
         // several legs of a polygonal course ---
-        float power = 1.0f;
+        float power = 0.3f;
 
         // create the root Sequence for this autonomous OpMode
         mSequence = new AutoLib.LinearSequence();
