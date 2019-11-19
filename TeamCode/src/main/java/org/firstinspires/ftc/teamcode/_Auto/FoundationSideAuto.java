@@ -39,13 +39,28 @@ public class FoundationSideAuto extends OpMode {
 
         double inTravel = 560/(4*(Math.PI)); //this should convert to inches
         float uniPow = 0.33f; //for 20:1 motors
+        float inTile = 24f; //amount of inches in tile use for when need to travel by number of tiles
+
         //560 == 1 rotation of the wheel (I think?)
         //Which should be around 4pi inches or ~12.56637 inches
         seq = new AutoLib.LinearSequence();
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(6*inTravel), true)); //should travel 6 in
+        //TODO: Make an Auto
+        //seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(6*inTravel), true)); //should travel 6 in
         //seq.add(new AutoLib.AzimuthDistanceDriveStep(this, -90f, x, y, motors, uniPow, d,5f)); //maybe mark with the inTravel thing
         //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep) //TODO: Get this to work, or see if there is something better for strafing
                                                              //TODO: Also setup a PID Loop and figure out how to use Gyro
+
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(1.5f*inTile*inTravel), true)); //move forward 1.5 tiles
+        //rotate 90deg right
+        //move forward 1 tile
+        //rotate 90d left
+        //move forward .5 tile
+        //foundation grabber grab
+        //move backward 1.5t (sub to change)
+        //un-grab
+        //rotate left 90d
+        //move forward 2 tiles
+
         done = false;
     }
 
