@@ -38,6 +38,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
@@ -69,6 +71,8 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 	RobotHardware rh;
 	ToggleButton lb;
 	ToggleButton rb;
+
+	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 
 	/**
 	 * Constructor
@@ -109,6 +113,15 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 
 		// create a Step that we will use in teleop mode
 		mStep = new AutoLib.SquirrelyGyroTimedDriveStep(this, 0, 0, rh.mIMU, pid, rh.mMotors, 0, 10000, false);
+
+		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
+		// use constructor that defaults the wheel type to Normal (not Mecanum or X-Drive)
+		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
+		double wheelDiam = 4.0;		    // wheel diameter (in)
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);  // example starting position: at origin of field
+		SensorLib.EncoderGyroPosInt.DriveType dt = //SensorLib.EncoderGyroPosInt.DriveType.XDRIVE;
+				SensorLib.EncoderGyroPosInt.DriveType.MECANUM;
+		mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 	}
 
 
@@ -174,6 +187,13 @@ public class AbsoluteSquirrelyGyroDrive1 extends OpMode {
 
 		// run the control step
 		mStep.loop();
+
+		// update position estimate using motor encoders and gyro
+		mPosInt.loop();
+
+		// Send telemetry data back to driver station.
+		telemetry.addData("position", String.format("%.2f", mPosInt.getX())+", " + String.format("%.2f", mPosInt.getY()));
+
 	}
 
 	/*

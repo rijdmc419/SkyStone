@@ -37,6 +37,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /**
@@ -50,6 +53,7 @@ import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 //@Disabled
 public class SquirrelyDrive2 extends OpMode {
 
+	SensorLib.EncoderGyroPosInt mPosInt;	// position integrator
 	RobotHardware rh;
 
 	/**
@@ -67,6 +71,15 @@ public class SquirrelyDrive2 extends OpMode {
 		// get hardware
 		rh = new RobotHardware();
 		rh.init(this);
+
+		// create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
+		// use constructor that defaults the wheel type to Normal (not Mecanum or X-Drive)
+		int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
+		double wheelDiam = 4.0;		    // wheel diameter (in)
+		Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);  // example starting position: at origin of field
+		SensorLib.EncoderGyroPosInt.DriveType dt = //SensorLib.EncoderGyroPosInt.DriveType.XDRIVE;
+				SensorLib.EncoderGyroPosInt.DriveType.MECANUM;
+		mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 	}
 
 
@@ -111,6 +124,9 @@ public class SquirrelyDrive2 extends OpMode {
 		rh.mMotors[2].setPower(fl);
 		rh.mMotors[3].setPower(bl);
 
+		// update position estimate using motor encoders and gyro
+		mPosInt.loop();
+
 		/*
 		 * Send telemetry data back to driver station.
 		 */
@@ -118,7 +134,7 @@ public class SquirrelyDrive2 extends OpMode {
 		telemetry.addData("front left/right power:", "%.2f %.2f", fl, fr);
 		telemetry.addData("back left/right power:", "%.2f %.2f", bl, br);
 		telemetry.addData("gamepad1:", gamepad1);
-		//telemetry.addData("gamepad2", gamepad2);
+		telemetry.addData("position", String.format("%.2f", mPosInt.getX())+", " + String.format("%.2f", mPosInt.getY()));
 	}
 
 	/*
