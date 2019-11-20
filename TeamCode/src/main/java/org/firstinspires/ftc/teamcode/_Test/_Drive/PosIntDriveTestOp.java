@@ -126,8 +126,6 @@ public class PosIntDriveTestOp extends OpMode {
         OpMode mOpMode;
         SensorLib.EncoderGyroPosInt mPosInt;
         Position mTarget;
-        AutoLib.GyroGuideStep mGuideStep;
-        PositionTerminatorStep mTerminatorStep;
 
         public PosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
                                  float power, SensorLib.PID pid, Position target, double tolerance, boolean stop)
@@ -177,16 +175,11 @@ public class PosIntDriveTestOp extends OpMode {
         // create a PID adjuster for interactive tweaking (see loop() below)
         mPidAdjuster = new SensorLib.PIDAdjuster(this, mPid, gamepad1);
 
-        // on Ratbot, only two motor encoders are currently hooked up: [1]br, [3]bl
-        DcMotor[] encoderMotors = new DcMotor[2];
-        encoderMotors[0] = rh.mMotors[1];
-        encoderMotors[1] = rh.mMotors[3];
-
         // create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
         int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
         double wheelDiam = 4.0;		    // wheel diameter (in)
         Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0); // example starting position: at origin of field
-        mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+        mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
 
         // create an autonomous sequence with the steps to drive
