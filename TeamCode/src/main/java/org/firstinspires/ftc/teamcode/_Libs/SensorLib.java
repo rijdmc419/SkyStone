@@ -410,7 +410,7 @@ public class SensorLib {
             for (int i=0; i<mEncoderMotors.length; i++) {
                 int encoder = mEncoderMotors[i].getCurrentPosition();
                 encoderDist[i] = encoder - mEncoderPrev[i];
-                mEncoderPrev[i] = mEncoderMotors[i].getCurrentPosition();
+                mEncoderPrev[i] = encoder;
             }
 
             // compute physical distance each wheel thinks it moved
