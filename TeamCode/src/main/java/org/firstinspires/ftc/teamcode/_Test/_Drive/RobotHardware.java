@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
+import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 public class RobotHardware {
 
@@ -15,7 +16,7 @@ public class RobotHardware {
     public boolean init(OpMode opmode) {
         boolean bOkay = true;
         try {
-            AutoLib.HardwareFactory mf = new AutoLib.RealHardwareFactory(opmode);
+            TestHardware.HardwareFactory mf = new TestHardware.RealHardwareFactory(opmode);
 
             // get the motors:
             // assumed order is fr, br, fl, bl

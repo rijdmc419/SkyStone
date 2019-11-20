@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
+import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 
 /**
@@ -23,7 +24,7 @@ public class EncodersTest extends OpMode {
 
     public void init() {
         // get hardware
-        AutoLib.HardwareFactory mf = new AutoLib.RealHardwareFactory(this);
+        TestHardware.HardwareFactory mf = new TestHardware.RealHardwareFactory(this);
         mMotors = new DcMotor[motorNames.length];
         for (int i = 0; i < motorNames.length; i++) {
             mMotors[i] = mf.getDcMotor(motorNames[i]);
