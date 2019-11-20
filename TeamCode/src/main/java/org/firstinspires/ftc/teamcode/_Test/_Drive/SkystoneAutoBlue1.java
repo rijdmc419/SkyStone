@@ -147,8 +147,6 @@ public class SkystoneAutoBlue1 extends OpMode {
 
         SensorLib.EncoderGyroPosInt mPosInt;
         Position mTarget;
-        AutoLib.GyroGuideStep mGuideStep;
-        PositionTerminatorStep mTerminatorStep;
 
         public SqPosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
                                    float power, SensorLib.PID pid, Position target, float heading, double tolerance, boolean stop)
