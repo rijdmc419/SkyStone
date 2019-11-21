@@ -51,7 +51,7 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
  */
 
 @TeleOp(name="TankDrive PosInt Encoder", group="Test")  // @Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class TankDrivePosInt extends OpMode {
 
 	DcMotor motorFrontRight;

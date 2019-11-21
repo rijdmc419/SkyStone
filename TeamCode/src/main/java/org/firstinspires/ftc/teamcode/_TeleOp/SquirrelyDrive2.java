@@ -45,7 +45,7 @@ import com.qualcomm.robotcore.util.Range;
  * squirrley traversal (left and right sticks in x direction)
  */
 @TeleOp(name="SquirrelyDrive2", group="Test")  // @Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class SquirrelyDrive2 extends OpMode {
 
 	DcMotor motorFrontRight;

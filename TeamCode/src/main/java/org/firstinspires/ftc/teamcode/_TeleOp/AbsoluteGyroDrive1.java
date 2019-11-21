@@ -50,7 +50,7 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
  */
 
 @TeleOp(name="AbsoluteGyroDrive1", group="Test")  // @Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class  AbsoluteGyroDrive1 extends OpMode {
 
 	DcMotor motorFrontRight;
