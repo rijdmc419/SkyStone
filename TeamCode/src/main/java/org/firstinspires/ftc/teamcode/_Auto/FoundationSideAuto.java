@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
@@ -16,18 +17,25 @@ public class FoundationSideAuto extends OpMode {
     ColorSensor clrSnr;
     DcMotor motors[];
     BNO055IMU gyr0;
+    //Servo serv[];
+    Servo serv0;
+    Servo serv1;
     AutoLib.Sequence seq;
     boolean done;
 
     @Override
     public void init(){
         motors =new DcMotor[4];
+        //serv = new Servo[2];
         robot.init(hardwareMap);
 
         motors[0] = robot.fr;
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl; //makes motors
+
+        serv0 = robot.serv0;
+        serv1 = robot.serv1;
 
         gyr0 = robot.gyr0; //i got no clue what this does or if it works
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -50,18 +58,30 @@ public class FoundationSideAuto extends OpMode {
         //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep) //TODO: Get this to work, or see if there is something better for strafing
                                                              //TODO: Also setup a PID Loop and figure out how to use Gyro
 
+        //sequence start
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(1.5f*inTile*inTravel), false)); //move forward 1.5 tiles
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, -560, 560, true));//rotate 90deg right
-        //move forward 1 tile
-        //rotate 90d left
-        //move forward .5 tile
-        //foundation grabber grab
-        //move backward 1.5t (sub to change)
-        //un-grab
-        //rotate left 90d
-        //move forward 2 tiles
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, -560 /*TODO:Fixnums*/, 560, true));//rotate 90deg right
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(inTile*inTravel), false)); //move forward 1 tile
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, true)); //rotate 90d left
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(inTile*inTravel), false)); //move forward .5 tile
+
+        //foundation grabber grabby thing
+        seq.add(new AutoLib.ServoStep(serv0, 1.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(serv1, 1.0)); //TODO: Fixnums
+        seq.add(new AutoLib.LogTimeStep(this, "wait servo down", 1.0));
+
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(-1.5f*inTile*inTravel), false)); //move backward 1.5t (sub to change)
+
+        //foundation gragger ungrabby thing
+        seq.add(new AutoLib.ServoStep(serv0, 0.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(serv1, 0.0)); //TODO: Fixnums
+        seq.add(new AutoLib.LogTimeStep(this, "wait servo up", 1.0));
+
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, true)); //rotate left 90d
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(2f*inTile*inTravel), false));//move forward 2 tiles
 
         done = false;
+        //sequence end
     }
 
     @Override
