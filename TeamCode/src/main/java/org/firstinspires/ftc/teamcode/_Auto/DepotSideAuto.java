@@ -26,7 +26,18 @@ public class DepotSideAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
+        float uniPow = 0.33f;
+
         seq = new AutoLib.LinearSequence();
+
+        //start sequence
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
+        seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, 90f, uniPow, 0.5f, true));
+
+        //sudo code
+
+        done = false;
+        //end sequence
 
     }
 
