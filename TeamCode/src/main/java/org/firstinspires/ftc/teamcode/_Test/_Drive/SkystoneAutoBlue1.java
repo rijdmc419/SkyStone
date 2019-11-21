@@ -149,7 +149,7 @@ public class SkystoneAutoBlue1 extends OpMode {
         mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
         // (option) Start up Vuforia
-        final boolean bUseVuforia = false;
+        final boolean bUseVuforia = true;
         if (bUseVuforia) {
             mVLib = new VuforiaLib_SkyStone();
             mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
