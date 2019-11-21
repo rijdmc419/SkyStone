@@ -34,7 +34,12 @@ public class DepotSideAuto extends OpMode {
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
         seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, 90f, uniPow, 0.5f, true));
 
+        //TODO: Actually Make this
         //sudo code
+        //move forward 1.5 tiles (pos 1)
+        //move left until fine skystone
+        //grab skystone
+        //move back to pos 1
 
         done = false;
         //end sequence
