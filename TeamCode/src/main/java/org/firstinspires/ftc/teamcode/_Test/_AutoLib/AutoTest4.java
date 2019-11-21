@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode._Libs.ToggleButton;
  * This one tests the Switch Step construct.
  * Created by phanau on 1/25/19.
  */
-
+/*
 class myDynamicCaseStep extends AutoLib.Step {
     OpMode mOpmode;
     AutoLib.SwitchStep2 mTarget;
@@ -96,3 +96,4 @@ public class AutoTest4 extends OpMode {
         telemetry.addData("stop() called", "");
     }
 }
+*/
