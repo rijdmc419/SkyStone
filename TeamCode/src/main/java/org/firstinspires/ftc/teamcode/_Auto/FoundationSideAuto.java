@@ -60,9 +60,9 @@ public class FoundationSideAuto extends OpMode {
 
         //sequence start
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(1.5f*inTile*inTravel), false)); //move forward 1.5 tiles
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, -560 /*TODO:Fixnums*/, 560, false));//rotate 90deg right
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, -560 /*TODO:Fixnums*/, 560, true));//rotate 90deg right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(inTile*inTravel), false)); //move forward 1 tile
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, false)); //rotate 90d left
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, true)); //rotate 90d left
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(inTile*inTravel), false)); //move forward .5 tile
 
         //foundation grabber grabby thing
@@ -77,8 +77,8 @@ public class FoundationSideAuto extends OpMode {
         seq.add(new AutoLib.ServoStep(lfServo, 0.0)); //TODO: Fixnums
         seq.add(new AutoLib.LogTimeStep(this, "wait servo up", 1.0));
 
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, false)); //rotate left 90d
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(2f*inTile*inTravel), true));//move forward 2 tiles
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, true)); //rotate left 90d
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(2f*inTile*inTravel), false));//move forward 2 tiles
 
         done = false;
         //sequence end

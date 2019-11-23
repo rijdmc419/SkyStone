@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 //Useful Thing:
@@ -14,14 +15,12 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class DepotSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo fservos[];
     AutoLib.Sequence seq;
     boolean done;
 
     @Override
     public void init(){
         motors = new DcMotor[4];
-        fservos = new Servo[2];
         robot.init(hardwareMap);
 
         motors[0] = robot.fr;
@@ -29,13 +28,15 @@ public class DepotSideAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        fservos[0] = robot.lfServo;
-        fservos[1] = robot.rfServo;
+        //fservos[0] = robot.lfServo;
+        //fservos[1] = robot.rfServo;
 
         float uniPow = 0.33f;
 
-        telemetry.addData("Left Mover", fservos[0]);
-        telemetry.addData("Right Mover", fservos[1]);
+        //telemetry.addData("Left Mover", fservos[0]);
+        //telemetry.addData("Right Mover", fservos[1]);
+
+        float uniPow = 0.33f;
 
         seq = new AutoLib.LinearSequence();
 
