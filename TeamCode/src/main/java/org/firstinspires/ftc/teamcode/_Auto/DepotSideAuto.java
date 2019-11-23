@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-@Autonomous(name="LM2 Depot Side")
+@Autonomous(name="RED Depot Side")
 public class DepotSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
@@ -33,7 +33,7 @@ public class DepotSideAuto extends OpMode {
         lfserv = robot.lfServo;
         rfserv= robot.rfServo;
 
-        float uniPow = 1f;
+        float uniPow = 0.33f;
 
         telemetry.addData("Left Mover", lfserv);
         telemetry.addData("Right Mover", rfserv);
@@ -46,8 +46,8 @@ public class DepotSideAuto extends OpMode {
         //start sequence
         seq.add(new AutoLib.ServoStep(lfserv, 0));
         seq.add(new AutoLib.ServoStep(rfserv, 0));
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false)); //90d right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));
 
 
@@ -83,15 +83,15 @@ public class DepotSideAuto extends OpMode {
         int out = (int) Math.round(c*in);
         return out;
     }
-    public int lRot(float deg){ //pos to counterclockwise, neg to clockwise
+    public int lRot(float deg){ //neg to counterclockwise, pos to clockwise
         float c = -9.474f;
         float out = c*deg;
-        return (int) out;
+        return  Math.round(out);
     }
-    public int rRot(float deg){ //pos to counterclockwise, neg to clockwise
+    public int rRot(float deg){ //neg to counterclockwise, pos to clockwise
         float c = 9.648f;
         float out = c*deg;
-        return (int) out;
+        return Math.round(out);
     }
     @Override
     public void start(){

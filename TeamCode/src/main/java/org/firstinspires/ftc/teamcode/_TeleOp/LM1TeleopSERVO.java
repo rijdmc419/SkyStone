@@ -35,6 +35,10 @@ public class LM1TeleopSERVO extends OpMode{
         gyr0 = robot.gyr0;
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
         gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
+
+        //TODO: Test to see if this actually works
+     //   lfserv.setPosition(0);
+      //  rfserv.setPosition(0);
     }
 
     @Override
@@ -44,7 +48,7 @@ public class LM1TeleopSERVO extends OpMode{
 
     @Override
     public void loop(){
-        float uniPow = 0.33f; //for 20:1 motors
+        float uniPow = 1f; //for 20:1 motors
         float tx = gamepad1.left_stick_x; //rotation
         float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
         float left = (ty + tx/2);
@@ -91,8 +95,10 @@ public class LM1TeleopSERVO extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
-        telemetry.addData("Left Mover", lfserv);
-        telemetry.addData("Right Mover", rfserv);
+       // telemetry.addData("Left Mover", lfserv.getPosition());
+ //       telemetry.addData("Right Mover", rfserv.getPosition());
+        telemetry.addData("Temperature: ", gyr0.getTemperature().temperature);
+
         telemetry.addData("", gamepad1);
 
        /* String hexTemp =  String.valueOf(gyr0.getTemperature());
@@ -110,7 +116,7 @@ public class LM1TeleopSERVO extends OpMode{
                 lfserv.setPosition(0f); //down value
             }
             else{
-                lfserv.setPosition(-1f); //up value start
+                lfserv.setPosition(-1f); //up value (start)
             }
         }
     }
