@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo greg;
+    Servo lfserv, rfserv;
     BNO055IMU gyr0;
     boolean A=false;
     boolean whichA=false;
@@ -23,13 +23,14 @@ public class LM1TeleopSERVO extends OpMode{
     public void init(){
         motors = new DcMotor[4];
         robot.init(hardwareMap);
-        //TODO: see if we can switch the br and fr here rather than in the config file (we'll test that on the Fri before LM1)
+        //TODO: see if we can switch the br and fr here rather than in the config file (we'll test that on the Fri before LM2)
         motors[0] = robot.fr;
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        greg = robot.greg;
+        lfserv = robot.lfServo;
+        rfserv = robot.rfServo;
 
         gyr0 = robot.gyr0;
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -90,6 +91,8 @@ public class LM1TeleopSERVO extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
+        telemetry.addData("Left Mover", lfserv);
+        telemetry.addData("Right Mover", rfserv);
         telemetry.addData("", gamepad1);
         telemetry.addData("Tempature: ", gyr0.getTemperature());
 
@@ -100,10 +103,10 @@ public class LM1TeleopSERVO extends OpMode{
             A = false;
             whichA= !whichA;
             if(whichA){
-                greg.setPosition(0f); //down value
+                lfserv.setPosition(0f); //down value
             }
             else{
-                greg.setPosition(-1f); //up value start
+                lfserv.setPosition(-1f); //up value start
             }
         }
     }

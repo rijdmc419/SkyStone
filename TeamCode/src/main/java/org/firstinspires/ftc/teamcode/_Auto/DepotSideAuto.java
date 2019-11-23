@@ -10,18 +10,19 @@ import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-@Autonomous(name="LM1 Depot Side")
+@Autonomous(name="LM2 Depot Side")
 public class DepotSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo fservos[];
+    Servo lfserv, rfserv;
     AutoLib.Sequence seq;
+    AutoLib.Sequence foundSeq;
     boolean done;
+
 
     @Override
     public void init(){
         motors = new DcMotor[4];
-        fservos = new Servo[2];
         robot.init(hardwareMap);
 
         motors[0] = robot.fr;
@@ -29,19 +30,27 @@ public class DepotSideAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        fservos[0] = robot.lfServo;
-        fservos[1] = robot.rfServo;
+        lfserv = robot.lfServo;
+        rfserv= robot.rfServo;
 
-        float uniPow = 0.33f;
+        float uniPow = 1f;
 
-        telemetry.addData("Left Mover", fservos[0]);
-        telemetry.addData("Right Mover", fservos[1]);
+        telemetry.addData("Left Mover", lfserv);
+        telemetry.addData("Right Mover", rfserv);
 
+       // foundSeq = new AutoLib.ConcurrentSequence();
         seq = new AutoLib.LinearSequence();
 
+       // foundSeq.add(new AutoLib.ServoStep(lfserv, 0));
+        //foundSeq.add(new AutoLib.ServoStep(rfserv, 0));
         //start sequence
+        seq.add(new AutoLib.ServoStep(lfserv, 0));
+        seq.add(new AutoLib.ServoStep(rfserv, 0));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
-        seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, 90f, uniPow, 0.5f, true));
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));
+
+
 
         //TODO: Actually Make this
         //sudo code
@@ -74,7 +83,16 @@ public class DepotSideAuto extends OpMode {
         int out = (int) Math.round(c*in);
         return out;
     }
-
+    public int lRot(float deg){ //pos to counterclockwise, neg to clockwise
+        float c = -9.474f;
+        float out = c*deg;
+        return (int) out;
+    }
+    public int rRot(float deg){ //pos to counterclockwise, neg to clockwise
+        float c = 9.648f;
+        float out = c*deg;
+        return (int) out;
+    }
     @Override
     public void start(){
 

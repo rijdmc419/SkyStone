@@ -9,7 +9,8 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
-
+//Useful Thing:
+//https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
 @Autonomous(name="LM1 Foundation Side")
 public class FoundationSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware(); //get the robots hardware
@@ -42,13 +43,32 @@ public class FoundationSideAuto extends OpMode {
         //560 == 1 rotation of the wheel (I think?)
         //Which should be around 4pi inches or ~12.56637 inches
         seq = new AutoLib.LinearSequence();
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(6*inTravel), true)); //should travel 6 in
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), true));
+
         //seq.add(new AutoLib.AzimuthDistanceDriveStep(this, -90f, x, y, motors, uniPow, d,5f)); //maybe mark with the inTravel thing
         //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep) //TODO: Get this to work, or see if there is something better for strafing
                                                                 //TODO: Also setup a PID Loop and figure out how to use Gyro
         done = false;
     }
 
+    public int travDist(float in){
+        double c = 560/(4*(Math.PI));
+        int out = (int) Math.round(c*in);
+        return out;
+    }
+    public int lRot(float deg){ //pos to counterclockwise, neg to clockwise
+        float c = -9.474f;
+        float out = c*deg;
+        return (int) out;
+    }
+    public int rRot(float deg){ //pos to counterclockwise, neg to clockwise
+        float c = 9.648f;
+        float out = c*deg;
+        return (int) out;
+    }
     @Override
     public void start(){
         telemetry.addData("Starting Auto", "");
