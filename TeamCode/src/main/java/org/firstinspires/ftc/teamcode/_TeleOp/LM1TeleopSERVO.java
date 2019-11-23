@@ -36,14 +36,15 @@ public class LM1TeleopSERVO extends OpMode{
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
         gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
 
-        //TODO: Test to see if this actually works
-     //   lfserv.setPosition(0);
-      //  rfserv.setPosition(0);
+
     }
 
     @Override
     public void start(){
         telemetry.addData("Starting Teleop", "");
+        //TODO: Test to see if this actually works
+        //   lfserv.setPosition(0);
+        //  rfserv.setPosition(0);
     }
 
     @Override
@@ -113,10 +114,10 @@ public class LM1TeleopSERVO extends OpMode{
             A = false;
             whichA= !whichA;
             if(whichA){
-                lfserv.setPosition(0f); //down value
+                lfserv.setPosition(1f); //down value
             }
             else{
-                lfserv.setPosition(-1f); //up value (start)
+                lfserv.setPosition(0f); //up value (start)
             }
         }
     }
