@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo greg;
+    //Servo greg;
     BNO055IMU gyr0;
     boolean A=false;
     boolean whichA=false;
@@ -29,7 +29,7 @@ public class LM1TeleopSERVO extends OpMode{
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        greg = robot.greg;
+        //greg = robot.greg;
 
         gyr0 = robot.gyr0;
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -68,7 +68,7 @@ public class LM1TeleopSERVO extends OpMode{
         double power = Math.sqrt(x*x + y*y);
         front *= power;
         back *= power;
-
+/*
         //TODO: Test wether cubing the powers when we take them as inputs as oposed to here works.
         //front = front*front*front;
         //back = back*back*back;
@@ -80,9 +80,9 @@ public class LM1TeleopSERVO extends OpMode{
         back *= uniPow;
         left *= uniPow;
         right *= uniPow;
-
-        double fr = Range.clip(front+right, -1, 1);
-        double br = Range.clip(back+right, -1, 1);
+*/
+        double fr = Range.clip(back+right, -1, 1);
+        double br = Range.clip(front+right, -1, 1);
         double fl = Range.clip(front+left, -1, 1);
         double bl = Range.clip(back+left, -1, 1);
 
@@ -90,8 +90,18 @@ public class LM1TeleopSERVO extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
+
+        telemetry.addData("Clr Snsr ", robot.clrSnr.argb());
+        telemetry.addData("Left Encoder ", robot.fl.getCurrentPosition());
+        telemetry.addData("Right Encoder ", robot.fr.getCurrentPosition());
+
+
         telemetry.addData("", gamepad1);
-        telemetry.addData("Tempature: ", gyr0.getTemperature());
+
+       /* String hexTemp =  String.valueOf(gyr0.getTemperature());
+        Long intTemp = Long.decode(hexTemp);
+        telemetry.addData("Temperature (Hex): ", hexTemp);
+        telemetry.addData("Temperature (Int): ", intTemp); */
 
         if(gamepad2.a){
             A = true;
@@ -100,10 +110,10 @@ public class LM1TeleopSERVO extends OpMode{
             A = false;
             whichA= !whichA;
             if(whichA){
-                greg.setPosition(0f); //down value
+                //greg.setPosition(0f); //down value
             }
             else{
-                greg.setPosition(-1f); //up value start
+                //greg.setPosition(-1f); //up value start
             }
         }
     }
