@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode._Auto;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
@@ -12,7 +15,6 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class DepotSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-
     AutoLib.Sequence seq;
     boolean done;
 
@@ -25,6 +27,14 @@ public class DepotSideAuto extends OpMode {
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl;
+
+        //fservos[0] = robot.lfServo;
+        //fservos[1] = robot.rfServo;
+
+        float uniPow = 0.33f;
+
+        //telemetry.addData("Left Mover", fservos[0]);
+        //telemetry.addData("Right Mover", fservos[1]);
 
         float uniPow = 0.33f;
 

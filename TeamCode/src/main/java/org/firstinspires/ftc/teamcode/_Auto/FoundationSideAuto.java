@@ -18,8 +18,8 @@ public class FoundationSideAuto extends OpMode {
     DcMotor motors[];
     BNO055IMU gyr0;
     //Servo serv[];
-    Servo serv0;
-    Servo serv1;
+    Servo lfServo;
+    Servo rfServo;
     AutoLib.Sequence seq;
     boolean done;
 
@@ -34,8 +34,8 @@ public class FoundationSideAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl; //makes motors
 
-        serv0 = robot.serv0;
-        serv1 = robot.serv1;
+        lfServo = robot.lfServo;
+        rfServo = robot.rfServo;
 
         gyr0 = robot.gyr0; //i got no clue what this does or if it works
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -66,15 +66,15 @@ public class FoundationSideAuto extends OpMode {
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(inTile*inTravel), false)); //move forward .5 tile
 
         //foundation grabber grabby thing
-        seq.add(new AutoLib.ServoStep(serv0, 1.0)); //TODO: Fixnums
-        seq.add(new AutoLib.ServoStep(serv1, 1.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(rfServo, 1.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(lfServo, 1.0)); //TODO: Fixnums
         seq.add(new AutoLib.LogTimeStep(this, "wait servo down", 1.0));
 
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, (int) Math.round(-1.5f*inTile*inTravel), false)); //move backward 1.5t (sub to change)
 
         //foundation gragger ungrabby thing
-        seq.add(new AutoLib.ServoStep(serv0, 0.0)); //TODO: Fixnums
-        seq.add(new AutoLib.ServoStep(serv1, 0.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(rfServo, 0.0)); //TODO: Fixnums
+        seq.add(new AutoLib.ServoStep(lfServo, 0.0)); //TODO: Fixnums
         seq.add(new AutoLib.LogTimeStep(this, "wait servo up", 1.0));
 
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, 560 /*TODO:Fixnums*/, -560, true)); //rotate left 90d
