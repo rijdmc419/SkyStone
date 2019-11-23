@@ -31,8 +31,6 @@ public class DepotSideAuto extends OpMode {
         //fservos[0] = robot.lfServo;
         //fservos[1] = robot.rfServo;
 
-        float uniPow = 0.33f;
-
         //telemetry.addData("Left Mover", fservos[0]);
         //telemetry.addData("Right Mover", fservos[1]);
 
