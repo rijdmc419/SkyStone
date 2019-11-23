@@ -20,7 +20,8 @@ public class SkystoneHardware {
     public DcMotor bl = null;
     public DcMotor fr  = null;
     public DcMotor br = null;
-    public Servo greg = null;
+    public Servo lfServo = null;
+    public Servo rfServo = null;
     public BNO055IMU gyr0 = null;
     public ColorSensor clrSnr = null;
 
@@ -35,7 +36,8 @@ public class SkystoneHardware {
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
 
-        greg = hwMap.get(Servo.class, "greg");
+        lfServo = hwMap.get(Servo.class, "lfServo");
+        rfServo = hwMap.get(Servo.class, "rfServo");
         gyr0 = hwMap.get(BNO055IMU.class, "gyr0");
         clrSnr = hwMap.get(ColorSensor.class, "clrSnr");
 
