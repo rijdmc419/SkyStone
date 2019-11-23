@@ -69,7 +69,7 @@ public class LM1TeleopSERVO extends OpMode{
         double power = Math.sqrt(x*x + y*y);
         front *= power;
         back *= power;
-
+/*
         //TODO: Test wether cubing the powers when we take them as inputs as oposed to here works.
         //front = front*front*front;
         //back = back*back*back;
@@ -81,9 +81,9 @@ public class LM1TeleopSERVO extends OpMode{
         back *= uniPow;
         left *= uniPow;
         right *= uniPow;
-
-        double fr = Range.clip(front+right, -1, 1);
-        double br = Range.clip(back+right, -1, 1);
+*/
+        double fr = Range.clip(back+right, -1, 1);
+        double br = Range.clip(front+right, -1, 1);
         double fl = Range.clip(front+left, -1, 1);
         double bl = Range.clip(back+left, -1, 1);
 
@@ -94,7 +94,11 @@ public class LM1TeleopSERVO extends OpMode{
         telemetry.addData("Left Mover", lfserv);
         telemetry.addData("Right Mover", rfserv);
         telemetry.addData("", gamepad1);
-        telemetry.addData("Tempature: ", gyr0.getTemperature());
+
+       /* String hexTemp =  String.valueOf(gyr0.getTemperature());
+        Long intTemp = Long.decode(hexTemp);
+        telemetry.addData("Temperature (Hex): ", hexTemp);
+        telemetry.addData("Temperature (Int): ", intTemp); */
 
         if(gamepad2.a){
             A = true;
