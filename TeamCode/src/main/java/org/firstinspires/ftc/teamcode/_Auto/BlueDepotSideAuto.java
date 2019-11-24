@@ -46,7 +46,7 @@ public class BlueDepotSideAuto extends OpMode {
         //start sequence
      //   seq.add(new AutoLib.ServoStep(lfserv, 0));
       //  seq.add(new AutoLib.ServoStep(rfserv, 0));
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false)); //90d left
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));
 

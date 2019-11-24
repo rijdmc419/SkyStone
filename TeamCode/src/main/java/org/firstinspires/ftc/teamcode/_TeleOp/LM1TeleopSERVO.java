@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@TeleOp(name="LM1 SERVO Teleop")
+@TeleOp(name="LM2 SERVO Teleop")
 public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
@@ -42,15 +42,12 @@ public class LM1TeleopSERVO extends OpMode{
     @Override
     public void start(){
         telemetry.addData("Starting Teleop", "");
-        //TODO: Test to see if this actually works
-        //   lfserv.setPosition(0);
-        //  rfserv.setPosition(0);
     }
 
     @Override
     public void loop(){
-        float uniPow = 1f; //for 20:1 motors
-        float tx = gamepad1.left_stick_x; //rotation
+        float uniPow; //for 20:1 motors
+        float tx = gamepad1.right_stick_x; //rotation
         float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
         float left = (ty + tx/2);
         float right = (ty - tx/2);
@@ -58,7 +55,7 @@ public class LM1TeleopSERVO extends OpMode{
         left = Range.clip(left, -1, 1);
         right = Range.clip(right, -1, 1);
 
-        float x = gamepad1.right_stick_x; //strafe
+        float x = gamepad1.left_stick_x; //strafe
         float y = -gamepad1.right_stick_y;//forward & back
 
         x = Range.clip(x, -1, 1);
@@ -74,7 +71,13 @@ public class LM1TeleopSERVO extends OpMode{
         double power = Math.sqrt(x*x + y*y);
         front *= power;
         back *= power;
-/*
+
+        if(gamepad1.right_bumper){
+            uniPow = 0.5f;
+        }
+        else {
+            uniPow =1f;
+        }
         //TODO: Test wether cubing the powers when we take them as inputs as oposed to here works.
         //front = front*front*front;
         //back = back*back*back;
@@ -86,7 +89,7 @@ public class LM1TeleopSERVO extends OpMode{
         back *= uniPow;
         left *= uniPow;
         right *= uniPow;
-*/
+
         double fr = Range.clip(back+right, -1, 1);
         double br = Range.clip(front+right, -1, 1);
         double fl = Range.clip(front+left, -1, 1);
@@ -107,19 +110,29 @@ public class LM1TeleopSERVO extends OpMode{
         telemetry.addData("Temperature (Hex): ", hexTemp);
         telemetry.addData("Temperature (Int): ", intTemp); */
 
-        if(gamepad2.a){
+       if(gamepad2.a){
+           lfserv.setPosition(0f); //down value
+           rfserv.setPosition(1f);
+       }
+       else{
+           lfserv.setPosition(1f); //up value (start)
+           rfserv.setPosition(0f);
+       }
+       /* if(gamepad2.a){
             A = true;
         }
         else if(A=true){
             A = false;
             whichA= !whichA;
             if(whichA){
-                lfserv.setPosition(1f); //down value
+                lfserv.setPosition(0f);
+                rfserv.setPosition(1f);//down value
             }
             else{
-                lfserv.setPosition(0f); //up value (start)
+                lfserv.setPosition(1f); //up value (start)
+                rfserv.setPosition(0f);
             }
-        }
+        } */
     }
 
     @Override
