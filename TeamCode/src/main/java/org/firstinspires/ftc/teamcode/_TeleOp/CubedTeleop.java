@@ -10,13 +10,13 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@TeleOp(name="LM2 CUBED Teleop")
+@TeleOp(name="MAIN Teleop")
 public class CubedTeleop extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
     Servo lfserv, rfserv;
     BNO055IMU gyr0;
-    boolean A=false;
+    boolean A=false; //TODO: make the toggle work again
     boolean whichA=false;
 
     @Override
@@ -32,7 +32,7 @@ public class CubedTeleop extends OpMode{
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
 
-        gyr0 = robot.gyr0;
+        gyr0 = robot.gyr0; //TODO: Setup gyro based strafing
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
         gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
 
@@ -47,7 +47,7 @@ public class CubedTeleop extends OpMode{
     @Override
     public void loop(){
         float uniPow; //for 20:1 motors
-        float tx = gamepad1.right_stick_x; //rotation
+        float tx = gamepad1.right_stick_x; //rotation //TODO: Change back from d-pad to left joystick
         float ty; //= -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
         if(gamepad1.dpad_down){
             ty = -1f;
