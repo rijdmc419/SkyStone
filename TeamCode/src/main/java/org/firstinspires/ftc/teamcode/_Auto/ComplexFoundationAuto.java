@@ -17,7 +17,7 @@ public class ComplexFoundationAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware(); //get the robots hardware
     ColorSensor clrSnr;
     DcMotor motors[];
-    BNO055IMU gyr0;
+    BNO055IMU imu;
     //Servo serv[];
     Servo lfserv, rfserv;
     AutoLib.Sequence seq;
@@ -36,7 +36,7 @@ public class ComplexFoundationAuto extends OpMode {
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
 
-        gyr0 = robot.gyr0; //i got no clue what this does or if it works
+       // imu = robot.imu; //i got no clue what this does or if it works
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
         gParams.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         gParams.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
@@ -115,7 +115,7 @@ public class ComplexFoundationAuto extends OpMode {
     public void loop(){
         if (!done){
             done = seq.loop(); // returns true when we're done
-            telemetry.addData("Temperature: ", gyr0.getTemperature().temperature);
+            telemetry.addData("Temperature: ", imu.getTemperature().temperature);
             telemetry.addData("ClrSnr: ", clrSnr.argb());
         }
         else{

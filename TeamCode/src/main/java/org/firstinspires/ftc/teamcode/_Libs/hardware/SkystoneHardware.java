@@ -8,6 +8,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
+import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 
 /**
  * Created by bremm on 9/15/19.
@@ -24,7 +25,7 @@ public class SkystoneHardware {
     public Servo lfServo = null;
     public Servo rfServo = null;
 
-    public BNO055IMU gyr0 = null;
+    public BNO055IMUHeadingSensor imu = null;
     public ColorSensor clrSnr = null;
 
     HardwareMap hwMap = null;
@@ -42,7 +43,9 @@ public class SkystoneHardware {
         lfServo = hwMap.get(Servo.class, "lfServo");
         rfServo = hwMap.get(Servo.class, "rfServo");
 
-        gyr0 = hwMap.get(BNO055IMU.class, "gyr0");
+        imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
+        imu.init(0);
+
         clrSnr = hwMap.get(ColorSensor.class, "clrSnr");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
@@ -60,5 +63,7 @@ public class SkystoneHardware {
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+
     }
 }

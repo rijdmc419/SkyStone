@@ -15,7 +15,7 @@ public class LM1TeleopSERVO extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
     Servo lfserv, rfserv;
-    BNO055IMU gyr0;
+    BNO055IMU imu;
     boolean A=false;
     boolean whichA=false;
 
@@ -32,7 +32,7 @@ public class LM1TeleopSERVO extends OpMode{
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
 
-        gyr0 = robot.gyr0;
+       // imu = robot.imu;
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
         gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
 
@@ -101,7 +101,7 @@ public class LM1TeleopSERVO extends OpMode{
         motors[3].setPower(bl);
        // telemetry.addData("Left Mover", lfserv.getPosition());
  //       telemetry.addData("Right Mover", rfserv.getPosition());
-        telemetry.addData("Temperature: ", gyr0.getTemperature().temperature);
+        telemetry.addData("Temperature: ", imu.getTemperature().temperature);
 
         telemetry.addData("", gamepad1);
 
