@@ -2,13 +2,17 @@ package org.firstinspires.ftc.teamcode._Libs.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
+import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 
 /**
  * Created by bremm on 9/15/19.
@@ -27,6 +31,7 @@ public class SkystoneHardware {
 
     public BNO055IMUHeadingSensor imu = null;
     public ColorSensor clrSnr = null;
+    public DistanceSensor distSnr = null;
 
     HardwareMap hwMap = null;
 
@@ -47,6 +52,7 @@ public class SkystoneHardware {
         imu.init(0);
 
         clrSnr = hwMap.get(ColorSensor.class, "clrSnr");
+        distSnr = hwMap.get(DistanceSensor.class, "clrSnr");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
