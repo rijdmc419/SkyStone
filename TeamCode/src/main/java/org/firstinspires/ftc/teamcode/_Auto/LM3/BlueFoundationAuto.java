@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
 
-@Autonomous(name="LM3 Simple Red Foundation")
-public class RedFoundationAuto extends OpMode {
+@Autonomous(name="LM3 Simple Blue Foundation")
+public class BlueFoundationAuto extends OpMode {
     SkystoneHardware bot = new SkystoneHardware();
     ColorSensor lClr;
     Servo lfServ, rfServ;
@@ -65,9 +65,9 @@ public class RedFoundationAuto extends OpMode {
         seq.add(new AutoLib.ServoStep(lfServ, 1));
         seq.add(new AutoLib.ServoStep(rfServ,0));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false));
         //Lower Servos
         seq.add(new AutoLib.ServoStep(lfServ, 0));
@@ -81,7 +81,7 @@ public class RedFoundationAuto extends OpMode {
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1.5, false)); //wait for a bit
 
         //Go back to tape (close to wall)
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(50), true));
     }
 

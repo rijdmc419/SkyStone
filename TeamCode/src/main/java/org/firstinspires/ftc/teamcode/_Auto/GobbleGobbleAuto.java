@@ -37,7 +37,7 @@ public class GobbleGobbleAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        clrSnr = robot.clrSnr;
+        clrSnr = robot.lClr;
 
         imu = robot.imu;
 

@@ -43,8 +43,8 @@ public class GobbleGobbleTeleop extends OpMode{
 
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
-        clrSnr = robot.clrSnr;
-        distSnr = robot.distSnr;
+        clrSnr = robot.lClr;
+        distSnr = robot.lDist;
 
         imu = robot.imu; //TODO: Setup gyro based strafing
     }

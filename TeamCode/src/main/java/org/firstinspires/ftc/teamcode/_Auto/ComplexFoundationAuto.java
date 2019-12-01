@@ -42,7 +42,7 @@ public class ComplexFoundationAuto extends OpMode {
         gParams.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
 
-        clrSnr = robot.clrSnr; //see the above comment
+        clrSnr = robot.lClr; //see the above comment
 
         double inTravel = 560/(4*(Math.PI)); //this should convert to inches
         float uniPow = 0.33f; //for 20:1 motors

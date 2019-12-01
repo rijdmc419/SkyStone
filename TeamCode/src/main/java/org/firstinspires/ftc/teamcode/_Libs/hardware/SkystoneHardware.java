@@ -30,8 +30,11 @@ public class SkystoneHardware {
     public Servo rfServo = null;
 
     public BNO055IMUHeadingSensor imu = null;
-    public ColorSensor clrSnr = null;
-    public DistanceSensor distSnr = null;
+
+    public ColorSensor lClr = null;
+    public DistanceSensor lDist = null;
+    public ColorSensor rClr = null;
+    public DistanceSensor rDist = null;
 
     HardwareMap hwMap = null;
 
@@ -51,8 +54,10 @@ public class SkystoneHardware {
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
         imu.init(0);
 
-        clrSnr = hwMap.get(ColorSensor.class, "clrSnr");
-        distSnr = hwMap.get(DistanceSensor.class, "clrSnr");
+        lClr = hwMap.get(ColorSensor.class, "lClr");
+        lDist = hwMap.get(DistanceSensor.class, "lClr");
+        rClr = hwMap.get(ColorSensor.class, "rClr");
+        rDist = hwMap.get(DistanceSensor.class, "rClr");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
