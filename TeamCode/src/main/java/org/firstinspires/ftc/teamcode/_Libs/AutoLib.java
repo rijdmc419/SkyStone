@@ -938,10 +938,11 @@ public class AutoLib {
                     steps.add(step);
                 }
 
-            // if there's a separate terminator step, tell it about the motor steps and add it to the sequence
+            // if there's a separate terminator step, tell it about the motor steps and add it to the sequence ---
+            // it needs to go AFTER the motor steps so if it tries to stop the motors it will override the motor step settings.
             if (terminatorStep != null) {
                 terminatorStep.set(steps);
-                this.preAdd(terminatorStep);
+                this.add(terminatorStep);
             }
 
             // tell the guideStep about the motor Steps it should control
@@ -1139,6 +1140,59 @@ public class AutoLib {
         public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
 
     }
+
+
+    // using the given PositionIntegrator, return done when we're within tolerance distance of a given target position --
+    // if motors are supplied, stop them when we're done.
+    static public class PositionTerminatorStep extends AutoLib.MotorGuideStep {
+
+        OpMode mOpMode;
+        SensorLib.PositionIntegrator mPosInt;
+        Position mTarget;
+        double mTol;
+        double mPrevDist;
+        DcMotor[] mMotors;
+
+        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol, DcMotor[] motors) {
+            mOpMode = opmode;
+            mPosInt = posInt;
+            mTarget = target;
+            mTol = tol;
+            mMotors = motors;
+            mPrevDist = 1e6;    // infinity
+        }
+
+        @Override
+        public boolean loop() {
+            super.loop();
+            Position current = mPosInt.getPosition();
+            double dist = Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("PTS target", String.format("%.2f", mTarget.x) + ", " + String.format("%.2f", mTarget.y));
+                mOpMode.telemetry.addData("PTS current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
+                mOpMode.telemetry.addData("PTS dist", String.format("%.2f", dist));
+            }
+            boolean bDone = (dist < mTol);
+
+            // try to deal with "circling the drain" problem -- when we're close to the tolerance
+            // circle, but we can't turn sharply enough to get into it, we circle endlessly --
+            // if we detect that situation, just give up and move on.
+            // simple test: if we're close but the distance to the target increases, we've missed it.
+            if (dist < mTol*4 && dist > mPrevDist)
+                bDone = true;
+            mPrevDist = dist;
+
+            // optionally stop the motors when we're done
+            if (bDone && mMotors != null) {
+                for (DcMotor m : mMotors) {
+                    m.setPower(0);
+                }
+            }
+
+            return bDone;
+        }
+    }
+
 
     // some Steps that control a robot with "squirrely" wheels -- i.e. a robot that can move sideways using
     // e.g. Mecanum wheels or X-Drive
@@ -1372,48 +1426,6 @@ public class AutoLib {
         public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
-    // guide step that uses a gyro and a position integrator to determine how to guide the robot to the target
-    // using the given PositionIntegrator, return done when we're within tolerance distance of a given target position
-    static public class PositionTerminatorStep extends AutoLib.MotorGuideStep {
-
-        OpMode mOpMode;
-        SensorLib.PositionIntegrator mPosInt;
-        Position mTarget;
-        double mTol;
-        double mPrevDist;
-
-        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol) {
-            mOpMode = opmode;
-            mPosInt = posInt;
-            mTarget = target;
-            mTol = tol;
-            mPrevDist = 1e6;    // infinity
-        }
-
-        @Override
-        public boolean loop() {
-            super.loop();
-            Position current = mPosInt.getPosition();
-            double dist = Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
-            if (mOpMode != null) {
-                mOpMode.telemetry.addData("PTS target", String.format("%.2f", mTarget.x) + ", " + String.format("%.2f", mTarget.y));
-                mOpMode.telemetry.addData("PTS current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
-                mOpMode.telemetry.addData("PTS dist", String.format("%.2f", dist));
-            }
-            boolean bDone = (dist < mTol);
-
-            // try to deal with "circling the drain" problem -- when we're close to the tolerance
-            // circle, but we can't turn sharply enough to get into it, we circle endlessly --
-            // if we detect that situation, just give up and move on.
-            // simple test: if we're close but the distance to the target increases, we've missed it.
-            if (dist < mTol*4 && dist > mPrevDist)
-                bDone = true;
-            mPrevDist = dist;
-
-            return bDone;
-        }
-    }
-
     static public class SqGyroPosIntGuideStep extends AutoLib.SquirrelyGyroGuideStep {
 
         OpMode mOpMode;
@@ -1471,7 +1483,7 @@ public class AutoLib {
     }
 
     // Step: drive to given absolute field position while facing in the given direction using given EncoderGyroPosInt
-    class SqPosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
+    static public class SqPosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
 
         SensorLib.EncoderGyroPosInt mPosInt;
         Position mTarget;
@@ -1480,9 +1492,88 @@ public class AutoLib {
                                    float power, SensorLib.PID pid, Position target, float heading, double tolerance, boolean stop)
         {
             super(opmode, new SqGyroPosIntGuideStep(opmode, posInt, target, heading, pid, null, power, tolerance),
-                    new PositionTerminatorStep(opmode, posInt, target, tolerance),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop ? motors : null),
                     motors);
 
+            mPosInt = posInt;
+            mTarget = target;
+        }
+
+    }
+
+
+    // guide step that uses a gyro and a position integrator to determine how to guide the robot to the target
+    static public class GyroPosIntGuideStep extends AutoLib.GyroGuideStep {
+
+        OpMode mOpMode;
+        Position mTarget;
+        SensorLib.EncoderGyroPosInt mPosInt;
+        double mTol;
+        float mMaxPower;
+        float mMinPower = 0.25f;
+        float mSgnPower;
+
+        public GyroPosIntGuideStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, Position target,
+                                   SensorLib.PID pid, ArrayList<AutoLib.SetPower> motorsteps, float power, double tol) {
+            super(opmode, 0, posInt.getGyro(), pid, motorsteps, power);
+            mOpMode = opmode;
+            mTarget = target;
+            mPosInt = posInt;
+            mTol = tol;
+            mMaxPower = Math.abs(power);
+            mSgnPower = (power > 0) ? 1 : -1;
+        }
+
+        public boolean loop() {
+            // run the EncoderGyroPosInt to update its position based on encoders and gyro
+            mPosInt.loop();
+
+            // update the GyroGuideStep heading to continue heading for the target
+            float direction = (float) HeadingToTarget(mTarget, mPosInt.getPosition());
+            super.setHeading(direction);
+
+            // when we're close to the target, reduce speed so we don't overshoot
+            Position current = mPosInt.getPosition();
+            float dist = (float)Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
+            float brakeDist = (float)mTol * 5;  // empirical ...
+            if (dist < brakeDist) {
+                float power = mSgnPower * (mMinPower + (mMaxPower-mMinPower)*(dist/brakeDist));
+                super.setMaxPower(power);
+            }
+
+            // run the underlying GyroGuideStep and return what it returns for "done" -
+            // currently, it leaves it up to the terminating step to end the Step
+            return super.loop();
+        }
+
+        private double HeadingToTarget(Position target, Position current) {
+            double headingXrad = Math.atan2((target.y - current.y), (target.x - current.x));        // pos CCW from X-axis
+            double headingYdeg = SensorLib.Utils.wrapAngle(Math.toDegrees(headingXrad) - 90.0);     // pos CCW from Y-axis
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("GPIGS.HTT target", String.format("%.2f", target.x) + ", " + String.format("%.2f", target.y));
+                mOpMode.telemetry.addData("GPIGS.HTT current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
+                mOpMode.telemetry.addData("GPIGS.HTT heading", String.format("%.2f", headingYdeg));
+            }
+            return headingYdeg;
+        }
+    }
+
+    // Step: drive to given absolute field position using given EncoderGyroPosInt
+    static public class PosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
+
+        OpMode mOpMode;
+        SensorLib.EncoderGyroPosInt mPosInt;
+        Position mTarget;
+
+        public PosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
+                                 float power, SensorLib.PID pid, Position target, double tolerance, boolean stop)
+        {
+            super(opmode,
+                    new GyroPosIntGuideStep(opmode, posInt, target, pid, null, power, tolerance),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop ? motors : null),
+                    motors);
+
+            mOpMode = opmode;
             mPosInt = posInt;
             mTarget = target;
         }

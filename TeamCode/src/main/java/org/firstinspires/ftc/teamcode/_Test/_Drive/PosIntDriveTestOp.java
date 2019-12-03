@@ -23,127 +23,6 @@ import java.util.ArrayList;
 //@Disabled
 public class PosIntDriveTestOp extends OpMode {
 
-    // return done when we're within tolerance distance of target position
-    class PositionTerminatorStep extends AutoLib.MotorGuideStep {
-
-        OpMode mOpMode;
-        SensorLib.PositionIntegrator mPosInt;
-        Position mTarget;
-        double mTol;
-        double mPrevDist;
-
-        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol) {
-            mOpMode = opmode;
-            mPosInt = posInt;
-            mTarget = target;
-            mTol = tol;
-            mPrevDist = 1e6;    // infinity
-        }
-
-        @Override
-        public boolean loop() {
-            super.loop();
-            Position current = mPosInt.getPosition();
-            double dist = Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
-            if (mOpMode != null) {
-                mOpMode.telemetry.addData("PTS target", String.format("%.2f", mTarget.x) + ", " + String.format("%.2f", mTarget.y));
-                mOpMode.telemetry.addData("PTS current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
-                mOpMode.telemetry.addData("PTS dist", String.format("%.2f", dist));
-            }
-            boolean bDone = (dist < mTol);
-
-            // try to deal with "circling the drain" problem -- when we're close to the tolerance
-            // circle, but we can't turn sharply enough to get into it, we circle endlessly --
-            // if we detect that situation, just give up and move on.
-            // simple test: if we're close but the distance to the target increases, we've missed it.
-            if (dist < mTol*4 && dist > mPrevDist)
-                bDone = true;
-            mPrevDist = dist;
-
-            return bDone;
-        }
-    }
-
-    // guide step that uses a gyro and a position integrator to determine how to guide the robot to the target
-    class GyroPosIntGuideStep extends AutoLib.GyroGuideStep {
-
-        OpMode mOpMode;
-        Position mTarget;
-        SensorLib.EncoderGyroPosInt mPosInt;
-        double mTol;
-        float mMaxPower;
-        float mMinPower = 0.25f;
-        float mSgnPower;
-
-        public GyroPosIntGuideStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, Position target,
-                                   SensorLib.PID pid, ArrayList<AutoLib.SetPower> motorsteps, float power, double tol) {
-            super(opmode, 0, posInt.getGyro(), pid, motorsteps, power);
-            mOpMode = opmode;
-            mTarget = target;
-            mPosInt = posInt;
-            mTol = tol;
-            mMaxPower = Math.abs(power);
-            mSgnPower = (power > 0) ? 1 : -1;
-        }
-
-        public boolean loop() {
-            // run the EncoderGyroPosInt to update its position based on encoders and gyro
-            mPosInt.loop();
-
-            // update the GyroGuideStep heading to continue heading for the target
-            float direction = (float) HeadingToTarget(mTarget, mPosInt.getPosition());
-            super.setHeading(direction);
-
-            // when we're close to the target, reduce speed so we don't overshoot
-            Position current = mPosInt.getPosition();
-            float dist = (float)Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
-            float brakeDist = (float)mTol * 5;  // empirical ...
-            if (dist < brakeDist) {
-                float power = mSgnPower * (mMinPower + (mMaxPower-mMinPower)*(dist/brakeDist));
-                super.setMaxPower(power);
-            }
-
-            // run the underlying GyroGuideStep and return what it returns for "done" -
-            // currently, it leaves it up to the terminating step to end the Step
-            return super.loop();
-        }
-
-        private double HeadingToTarget(Position target, Position current) {
-            double headingXrad = Math.atan2((target.y - current.y), (target.x - current.x));        // pos CCW from X-axis
-            double headingYdeg = SensorLib.Utils.wrapAngle(Math.toDegrees(headingXrad) - 90.0);     // pos CCW from Y-axis
-            if (mOpMode != null) {
-                mOpMode.telemetry.addData("GPIGS.HTT target", String.format("%.2f", target.x) + ", " + String.format("%.2f", target.y));
-                mOpMode.telemetry.addData("GPIGS.HTT current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
-                mOpMode.telemetry.addData("GPIGS.HTT heading", String.format("%.2f", headingYdeg));
-            }
-            return headingYdeg;
-        }
-    }
-
-    // Step: drive to given absolute field position using given EncoderGyroPosInt
-    class PosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
-
-        OpMode mOpMode;
-        SensorLib.EncoderGyroPosInt mPosInt;
-        Position mTarget;
-
-        public PosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
-                                 float power, SensorLib.PID pid, Position target, double tolerance, boolean stop)
-        {
-            super(opmode,
-                    new GyroPosIntGuideStep(opmode, posInt, target, pid, null, power, tolerance),
-                    new PositionTerminatorStep(opmode, posInt, target, tolerance),
-                    motors);
-
-            mOpMode = opmode;
-            mPosInt = posInt;
-            mTarget = target;
-        }
-
-    }
-
-
-
     AutoLib.Sequence mSequence;             // the root of the sequence tree
     boolean bDone;                          // true when the programmed sequence is done
     boolean bSetup;                         // true when we're in "setup mode" where joysticks tweak parameters
@@ -196,23 +75,27 @@ public class PosIntDriveTestOp extends OpMode {
 
         // these position integrator steps use the encoder-based position integrator and IMU-gyro to move
         // the robot to a sequence of positions specified in absolute field coordinate system in inches
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, true));
 
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add((new AutoLib.LogTimeStep(this, "stopped!", 5)));
+
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, true));
+
+        mSequence.add((new AutoLib.LogTimeStep(this, "stopped!", 5)));
 
         // turn to heading zero to finish up
         mSequence.add(new AutoLib.AzimuthTolerancedTurnStep(this, 0, rh.mIMU, mPid, rh.mMotors, turnPower, tol, 10));
