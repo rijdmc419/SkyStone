@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode._TeleOp;
 
+import android.graphics.Color;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -29,10 +31,10 @@ public class GobbleGobbleTeleop extends OpMode{
     ColorSensor clrSnr;
     DistanceSensor distSnr;
     Orientation initAngles;
+    float[] hsv = new float[3];
 
     @Override
     public void init(){
-
 
         motors = new DcMotor[4];
         robot.init(hardwareMap);
@@ -59,6 +61,7 @@ public class GobbleGobbleTeleop extends OpMode{
         float uniPow; //for 20:1 motors
         float tx = gamepad1.right_stick_x; //rotation
         float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
+
 
         ty = ty*ty*ty;
 
@@ -89,10 +92,10 @@ public class GobbleGobbleTeleop extends OpMode{
         back *= power;
 
         if(gamepad1.right_trigger > 0){ //slow mode
-            uniPow = 0.5f;
+            uniPow = 1f;
         }
         else {
-            uniPow =1f;
+            uniPow =0.5f;
         }
 
         front *= uniPow;
@@ -111,16 +114,17 @@ public class GobbleGobbleTeleop extends OpMode{
         motors[2].setPower(fl);
         motors[3].setPower(bl);
 
+        Color.RGBToHSV(clrSnr.red(), clrSnr.green(), clrSnr.blue(), hsv);
         telemetry.addData("IMU Heading", imu.getHeading());
-        telemetry.addData("Degrees per turn", imu.getDegreesPerTurn());
-        telemetry.addData("Motor Power (%)", uniPow*100);
-        telemetry.addData("Is Stone?", isStone(clrSnr.red(), clrSnr.green(), clrSnr.blue()));
-        //TODO: make use of this (it's very sporadic
+        telemetry.addData("Motor Power (%)", Math.round(uniPow*100));
+        telemetry.addData("Is Stone?", isStone(Math.round(hsv[0]), Math.round(hsv[1]), Math.round(hsv[2])));
+        //TODO: make use of this (it's very sporadic)
         telemetry.addData("IR Dist",distSnr.getDistance(DistanceUnit.INCH));
         //TODO: Test to see if there's a connection with the alpha value (Cuz these just output zero rn atm)
-        telemetry.addData("Red (Light Adjusted))", clrSnr.red()/clrSnr.alpha());
-        telemetry.addData("Green (Light Adjusted))", clrSnr.green()/clrSnr.alpha());
-        telemetry.addData("Blue (Light Adjusted))", clrSnr.blue()/clrSnr.alpha());
+        telemetry.addData("Hue", hsv[0]);
+        telemetry.addData("Sat", hsv[1]);
+        telemetry.addData("Val", hsv[2]);
+
         telemetry.addData("Alpha", clrSnr.alpha());
         telemetry.addData("Red", clrSnr.red());
         telemetry.addData("Green", clrSnr.green());
@@ -139,16 +143,16 @@ public class GobbleGobbleTeleop extends OpMode{
             rfserv.setPosition(0f);
         }
     }
-    public boolean isStone(int r, int g, int b){ //TODO: Make more accurate (currently only accurate from 3-5in)
+    public boolean isStone(float h, float s, float v){ //TODO: Make more accurate (currently only accurate from 3-5in)
         float stone[] = new float[3];
-        stone[0] = 68; //r
-        stone[1] = 57; //g
-        stone[2] = 40; //b
+        stone[0] = 35; //h
+        stone[1] = 0.78f; //s
+        stone[2] = 0.5f; //v
         boolean out = false;
 
-        if(r >= stone[0]-14 && r <= stone[0]+14){ //r +- standard dev
-            if(g >= stone[1]-9 && g <= stone[1]+9){ //g +- standard dev
-                if(b >= stone[2]-5 && b <= stone[2]+5){ //b +- standard dev
+        if(h >= stone[0]-10 && h <= stone[0]+10){ //r +- standard dev
+            if(s >= stone[1]-0.25f && s <= stone[1]+0.25f){ //g +- standard dev
+                if(v >= stone[2]-0.25f && v <= stone[2]+0.25f){ //b +- standard dev
                     out = true;
                 }
             }

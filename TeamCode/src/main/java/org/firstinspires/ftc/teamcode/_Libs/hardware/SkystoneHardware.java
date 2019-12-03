@@ -28,6 +28,7 @@ public class SkystoneHardware {
 
     public Servo lfServo = null;
     public Servo rfServo = null;
+    public Servo tempServo = null;
 
     public BNO055IMUHeadingSensor imu = null;
 
@@ -50,6 +51,7 @@ public class SkystoneHardware {
 
         lfServo = hwMap.get(Servo.class, "lfServo");
         rfServo = hwMap.get(Servo.class, "rfServo");
+        tempServo = hwMap.get(Servo.class, "tempServo");
 
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
         imu.init(0);
