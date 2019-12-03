@@ -173,6 +173,8 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
 
+    private VuforiaTrackable stoneTarget = null;
+
     public void init(OpMode opMode) {
 
         // remember this so we can do telemetry output
@@ -220,7 +222,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
         // sets are stored in the 'assets' part of our application.
         targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone", myVuforiaTrackableDefaultListener.class);
 
-        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
+        stoneTarget = targetsSkyStone.get(0);
         stoneTarget.setName("Stone Target");
         VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
         blueRearBridge.setName("Blue Rear Bridge");
@@ -358,8 +360,8 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
         final float CAMERA_FORWARD_DISPLACEMENT  = 8.0f * mmPerInch;   // eg: Camera is x Inches in front of robot center (ratbot)
+        final float CAMERA_LEFT_DISPLACEMENT     = 0.0f * mmPerInch;   // eg: Camera is ON the robot's center line
         final float CAMERA_VERTICAL_DISPLACEMENT = 6.0f * mmPerInch;   // eg: Camera is z Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
 
         OpenGLMatrix robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -536,6 +538,9 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     // get tracking quality info
     public int getTrackableStatus() { return trackableStatus; }
     public int getTrackableStatusInfo() { return trackableStatusInfo; }
+
+    // get the Stone target so we can determine if we've seen that one
+    public VuforiaTrackable getStoneTarget() { return stoneTarget; }
 
     /**
      * Some simple utilities that extract information from a transformation matrix
