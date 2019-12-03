@@ -939,10 +939,10 @@ public class AutoLib {
                 }
 
             // if there's a separate terminator step, tell it about the motor steps and add it to the sequence ---
-            // it needs to go AFTER the motor steps so if it tries to stop the motors it will override the motor step settings.
+            // it needs to go BEFORE the motor steps so it can stop by zeroing the motor step power settings before they run.
             if (terminatorStep != null) {
-                terminatorStep.set(steps);
-                this.add(terminatorStep);
+                terminatorStep.set(steps);      // tell the terminator step about the motor control steps in case it wants to stop them
+                this.preAdd(terminatorStep);
             }
 
             // tell the guideStep about the motor Steps it should control
@@ -1151,15 +1151,20 @@ public class AutoLib {
         Position mTarget;
         double mTol;
         double mPrevDist;
-        DcMotor[] mMotors;
+        boolean mStop;
+        ArrayList<AutoLib.SetPower> mMotorsteps;
 
-        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol, DcMotor[] motors) {
+        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol, boolean stop) {
             mOpMode = opmode;
             mPosInt = posInt;
             mTarget = target;
             mTol = tol;
-            mMotors = motors;
+            mStop = stop;
             mPrevDist = 1e6;    // infinity
+        }
+
+        public void set(ArrayList<AutoLib.SetPower> motorsteps){
+            mMotorsteps = motorsteps;
         }
 
         @Override
@@ -1183,8 +1188,8 @@ public class AutoLib {
             mPrevDist = dist;
 
             // optionally stop the motors when we're done
-            if (bDone && mMotors != null) {
-                for (DcMotor m : mMotors) {
+            if (bDone && mStop) {
+                for (AutoLib.SetPower m : mMotorsteps) {
                     m.setPower(0);
                 }
             }
@@ -1492,7 +1497,7 @@ public class AutoLib {
                                    float power, SensorLib.PID pid, Position target, float heading, double tolerance, boolean stop)
         {
             super(opmode, new SqGyroPosIntGuideStep(opmode, posInt, target, heading, pid, null, power, tolerance),
-                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop ? motors : null),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop),
                     motors);
 
             mPosInt = posInt;
@@ -1570,7 +1575,7 @@ public class AutoLib {
         {
             super(opmode,
                     new GyroPosIntGuideStep(opmode, posInt, target, pid, null, power, tolerance),
-                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop ? motors : null),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop),
                     motors);
 
             mOpMode = opmode;

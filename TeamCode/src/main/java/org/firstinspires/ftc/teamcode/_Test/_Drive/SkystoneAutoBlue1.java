@@ -84,7 +84,7 @@ public class SkystoneAutoBlue1 extends OpMode {
                                    float power, SensorLib.PID pid, Position target, float heading, double tolerance, boolean stop)
         {
             super(opmode, new VfSqGyroPosIntGuideStep(opmode, mVLib, posInt, target, heading, pid, null, power, tolerance),
-                    new AutoLib.PositionTerminatorStep(opmode, posInt, target, tolerance, stop ? motors : null),
+                    new AutoLib.PositionTerminatorStep(opmode, posInt, target, tolerance, stop),
                     motors);
 
             mPosInt = posInt;
@@ -249,7 +249,7 @@ public class SkystoneAutoBlue1 extends OpMode {
         cs1.add(new FindSkystoneStep(this, lookLoc, skyLoc, 5.0f));         // look for SkyStone ...
         cs1.add(new LogPosition(this, "skyLoc", skyLoc,5.0f));       // ... and report target position while searching
         mSequence.add(cs1);
-        
+
         // drive to the SkyStone if we found it, otherwise to the default (middle) stone.
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid, skyLoc, -90 + boff, tol, true));
 
