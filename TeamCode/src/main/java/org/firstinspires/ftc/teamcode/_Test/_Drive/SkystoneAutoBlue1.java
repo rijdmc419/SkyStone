@@ -137,7 +137,7 @@ public class SkystoneAutoBlue1 extends OpMode {
         }
     }
 
-    // Step: use Vuforia to locate the Skystone image and set the given position to where it is so we can go there
+    // Step: log the given Position variable to the console so we can see if/when it changes due to Vuforia hit ...
     class LogPosition extends AutoLib.LogTimeStep {
 
         OpMode mOpMode;
@@ -158,8 +158,32 @@ public class SkystoneAutoBlue1 extends OpMode {
         }
     }
 
+    // a simple Step that computes a new Position (c) by adding an offset (b) to Position a.
+    // this happens during sequence run-time in loop(), not when the sequence is constructed in init().
+    class ComputePositionStep extends AutoLib.Step {
 
-        AutoLib.Sequence mSequence;             // the root of the sequence tree
+        Position mA, mB, mC;
+
+        public ComputePositionStep(Position a, Position b, Position c)
+        {
+            mA = a;  mB = b;  mC = c;
+        }
+
+        public boolean loop()
+        {
+            super.loop();
+            if (firstLoopCall()) {
+                mC.x = mA.x + mB.x;
+                mC.y = mA.y + mB.y;
+                mC.z = mA.z + mB.z;
+            }
+            return true;
+        }
+
+    }
+
+
+    AutoLib.Sequence mSequence;             // the root of the sequence tree
     boolean bDone;                          // true when the programmed sequence is done
     boolean bSetup;                         // true when we're in "setup mode" where joysticks tweak parameters
     SensorLib.PID mPid;                     // PID controller for the sequence
@@ -237,7 +261,6 @@ public class SkystoneAutoBlue1 extends OpMode {
         final float boff = -90;  // bearing offset of our convention (+Y to rear of field) vs. Vuforia's (+Y to Blue side)
         // coordinates and bearings below are in Vuforia terms to be compatible with Vuforia position updates if we use them.
 
-        // fetch a SkyStone and pull it out of line
         // get closer to the Skystones so Vuforia can see the Skystone image better
         Position lookLoc = new Position(DistanceUnit.INCH, -36, 40+ROBOT_LENGTH/2, 0., 0);
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid, lookLoc, -90+boff, tol, true));
@@ -246,51 +269,78 @@ public class SkystoneAutoBlue1 extends OpMode {
         // default to the middle Stone if we don't see one ...
         Position skyLoc = new Position(DistanceUnit.INCH, -36, 24+ROBOT_LENGTH/2, 0., 0);
         AutoLib.ConcurrentSequence cs1 = new AutoLib.ConcurrentSequence();
-        cs1.add(new FindSkystoneStep(this, lookLoc, skyLoc, 5.0f));         // look for SkyStone ...
-        cs1.add(new LogPosition(this, "skyLoc", skyLoc,5.0f));       // ... and report target position while searching
         mSequence.add(cs1);
 
+        cs1.add(new FindSkystoneStep(this, lookLoc, skyLoc, 3.0f));         // look for SkyStone ...
+        cs1.add(new LogPosition(this, "skyLoc", skyLoc,0.0f));       // ... and report target position while searching
+
         // drive to the SkyStone if we found it, otherwise to the default (middle) stone.
-        mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid, skyLoc, -90 + boff, tol, true));
+        mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid, skyLoc, -90+boff, tol, true));
 
         // grab the Skystone
         // mSequence.add(new AutoLib.ServoStep());
-        mSequence.add(new AutoLib.LogTimeStep(this, "grab stone", 3));
+        mSequence.add(new AutoLib.LogTimeStep(this, "grab Stone", 2));
 
-        // go to the Blue Skybridge
-        mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 48, 0., 0), -90 + boff, tol, false));
+        // back up a bit to pull the stone out of the line of stones
+        Position pullLoc = new Position(DistanceUnit.INCH, 0, 0, 0., 0);
+        mSequence.add(new ComputePositionStep(skyLoc, new Position(DistanceUnit.INCH, 0, 12, 0, 0), pullLoc));
+        mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid, pullLoc, -90+boff, tol, false));
 
-        // go to the Blue Foundation and pull it into the Blue Building Area
+        // go to the Blue Foundation
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 48, 32, 0., 0), -90 + boff, tol, true));
-        mSequence.add(new AutoLib.LogTimeStep(this,"grab foundation", 3));
+                new Position(DistanceUnit.INCH, 48, 32, 0., 0), -90+boff, tol, true));
 
+        // do the next two Steps in parallel
+        AutoLib.ConcurrentSequence cs2 = new AutoLib.ConcurrentSequence();
+        mSequence.add(cs2);
+
+        // drop the Skystone
+        // cs2.add(new AutoLib.ServoStep());
+        cs2.add(new AutoLib.LogTimeStep(this, "drop Stone", 2));
+
+        // grab the Foundation
+        // cs2.add(new AutoLib.ServoStep());
+        cs2.add(new AutoLib.LogTimeStep(this, "grab Foundation", 2));
+
+        // drag the Foundation to the Building Area
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 48, 62, 0., 0), -90 + boff, tol, true));
-        mSequence.add(new AutoLib.LogTimeStep(this,"release foundation", 3));
+                new Position(DistanceUnit.INCH, 48, 62, 0., 0), -90+boff, tol, true));
+
+        // release the Foundation
+        // mSequence.add(new AutoLib.ServoStep());
+        mSequence.add(new AutoLib.LogTimeStep(this, "release Foundation", 2));
 
         // slide out of the corridor left by positioning the Foundation
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 62, 0., 0), -90 + boff, tol, false));
+                new Position(DistanceUnit.INCH, 0, 62, 0., 0), -90+boff, tol, false));
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 48, 0., 0), -90 + boff, tol, true));
+                new Position(DistanceUnit.INCH, 0, 48, 0., 0), -90+boff, tol, false));
 
         // return to the quarry for a second SkyStone
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, -60, 32, 0., 0), -90 + boff, tol, false));
+                new Position(DistanceUnit.INCH, -60, 32, 0., 0), -90+boff, tol, true));
+
+        // grab the Skystone
+        // mSequence.add(new AutoLib.ServoStep());
+        mSequence.add(new AutoLib.LogTimeStep(this, "grab Stone", 2));
+
+        // back up a bit to pull the stone out of the line of stones
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, -60, 40, 0., 0), -90 + boff, tol, false));
+                new Position(DistanceUnit.INCH, -60, 40, 0., 0), -90+boff, tol, false));
 
         // bring it to the audience end of the Foundation via the Blue Skybridge
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 48, 0., 0), -90 + boff, tol, false));
+                new Position(DistanceUnit.INCH, 0, 48, 0., 0), -90+boff, tol, false));
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 24, 60, 0., 0), 0 + boff, tol, false));
+                new Position(DistanceUnit.INCH, 24, 60, 0., 0), 0+boff, tol, true));
+
+        // drop the Skystone
+        // cs2.add(new AutoLib.ServoStep());
+        mSequence.add(new AutoLib.LogTimeStep(this, "drop Stone", 2));
 
         // park under the SkyBridge
         mSequence.add(new SqPosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 48, 0., 0), 0 + boff, tol, true));
+                new Position(DistanceUnit.INCH, 0, 48, 0., 0), 0+boff, tol, true));
 
         // start out not-done
         bDone = false;
