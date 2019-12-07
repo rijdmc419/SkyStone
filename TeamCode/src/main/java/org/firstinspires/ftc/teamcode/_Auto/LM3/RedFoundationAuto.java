@@ -62,7 +62,7 @@ public class RedFoundationAuto extends OpMode {
         seq = new AutoLib.LinearSequence();
 
         //Move to foundation
-        seq.add(new AutoLib.ServoStep(lfServ, 1));
+        seq.add(new AutoLib.ServoStep(lfServ, 1)); //TODO: Test to see that this actually goes up
         seq.add(new AutoLib.ServoStep(rfServ,0));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right

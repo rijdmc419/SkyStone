@@ -73,14 +73,14 @@ public class RedDepotAuto extends OpMode {
 
         //Start testing loop
         while(/*Stone.color &&*/ dstSnr.getDistance(DistanceUnit.INCH) < 10){
-            seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(29), false));
+            seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(4), false));
             i++;
         }
         //swerve left 7"
-        //servo down
+        //servo down / intake grab
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-4*i), false));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-36), false));
-        //servo up
+        //servo up / intake ungrab
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), false));
 
     }

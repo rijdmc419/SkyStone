@@ -52,9 +52,15 @@ public class GobbleGobbleAuto extends OpMode {
 
       //  seq.add(new AutoLib.AzimuthCountedDriveStep(this, 0f, imu, mPID, motors, uniPow, travDist(24), false));
         //seq.add(new AutoLib.AzimuthCountedDriveStep(this, 90f, imu, mPID, motors, uniPow, travDist(24), false));
-        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 0f, 0f, imu, mPID, motors, uniPow, travDist(48), true));
+        //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 0f, 0f, imu, mPID, motors, uniPow, travDist(36), true));
+        //seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 0f, imu, mPID, motors, uniPow, travDist(36)))
        // seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 90f, imu, mPID, motors, uniPow, travDist(24), true));
        // seq.add(new AutoLib.AzimuthTimedDriveStep(this, 0f, imu, mPID, motors, uniPow, 30, true));
+
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 0f, imu, mPID, motors, uniPow, 3f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 90f, imu, mPID, motors, uniPow, 3f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 180f, imu, mPID, motors, uniPow, 3f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 270f, imu, mPID, motors, uniPow, 3f, true));
 
         done = false;
     }
@@ -88,13 +94,13 @@ public class GobbleGobbleAuto extends OpMode {
             telemetry.update();
         }
 
-        if (!done){
-            done = seq.loop(); // returns true when we're done
+        //if (!done){
+            seq.loop(); // returns true when we're done
          //   telemetry.addData("ClrSnr: ", clrSnr.argb());
-        }
-        else{
-            telemetry.addData("Sequence finished", "");
-        }
+        //}
+        //else{
+            //telemetry.addData("Sequence finished", "");
+        //}
         telemetry.addData("IMU Heading", imu.getHeading());
 
     }
