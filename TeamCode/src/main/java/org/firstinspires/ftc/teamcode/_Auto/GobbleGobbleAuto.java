@@ -27,6 +27,10 @@ public class GobbleGobbleAuto extends OpMode {
     boolean bSetup;
     boolean done;
 
+    public GobbleGobbleAuto(){
+        this.msStuckDetectInit = 10000;
+    }
+
     @Override
     public void init(){
         motors =new DcMotor[4];

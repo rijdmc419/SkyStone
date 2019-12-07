@@ -34,8 +34,6 @@ public class SkystoneHardware {
 
     public ColorSensor lClr = null;
     public DistanceSensor lDist = null;
-    public ColorSensor rClr = null;
-    public DistanceSensor rDist = null;
 
     HardwareMap hwMap = null;
 
@@ -58,8 +56,6 @@ public class SkystoneHardware {
 
         lClr = hwMap.get(ColorSensor.class, "lClr");
         lDist = hwMap.get(DistanceSensor.class, "lClr");
-        rClr = hwMap.get(ColorSensor.class, "rClr");
-        rDist = hwMap.get(DistanceSensor.class, "rClr");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
