@@ -48,7 +48,7 @@ public class GobbleGobbleAuto extends OpMode {
         float initHeading = 0f;
         imu.setHeadingOffset(initHeading);
 
-        float uniPow = 0.33f;
+        float uniPow = 0.17f;
 
         mPIDAdjuster = new SensorLib.PIDAdjuster(this, mPID, gamepad1);
 
@@ -61,10 +61,15 @@ public class GobbleGobbleAuto extends OpMode {
        // seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 90f, imu, mPID, motors, uniPow, travDist(24), true));
        // seq.add(new AutoLib.AzimuthTimedDriveStep(this, 0f, imu, mPID, motors, uniPow, 30, true));
 
-        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 0f, imu, mPID, motors, uniPow, 3f, false));
-        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 90f, imu, mPID, motors, uniPow, 3f, false));
-        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 180f, imu, mPID, motors, uniPow, 3f, false));
-        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 270f, imu, mPID, motors, uniPow, 3f, true));
+       /* seq.add(new AutoLib.AzimuthTimedDriveStep(this, 0f, imu, mPID, motors, uniPow, 5f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 90f, imu, mPID, motors, uniPow, 5f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 180f, imu, mPID, motors, uniPow, 5f, false));
+        seq.add(new AutoLib.AzimuthTimedDriveStep(this, 270f, imu, mPID, motors, uniPow, 5f, false)); */
+
+       seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 0f, 0f, imu, mPID, motors, uniPow,  travDist(24), false));
+       seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 90f, imu, mPID, motors, uniPow,  travDist(24), false));
+       seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 180f, 180f, imu, mPID, motors, uniPow,  travDist(24), false));
+       seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 270f, 270f, imu, mPID, motors, uniPow,  travDist(24), true));
 
         done = false;
     }
