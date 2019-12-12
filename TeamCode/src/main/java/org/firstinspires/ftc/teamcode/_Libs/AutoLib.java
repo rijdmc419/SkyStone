@@ -1309,9 +1309,14 @@ public class AutoLib {
 
             // log some data
             if (mOpMode != null) {
-                mOpMode.telemetry.addData("heading ", heading);
-                mOpMode.telemetry.addData("right-facing power ", mp.RightFacing());
-                mOpMode.telemetry.addData("left-facing power ", mp.LeftFacing());
+                mOpMode.telemetry.addData("gyro heading ", heading);
+                mOpMode.telemetry.addData("commanded heading ", mHeading);
+                mOpMode.telemetry.addData("abs direction ", mDirection);
+                mOpMode.telemetry.addData("rel direction ", relDir);
+                mOpMode.telemetry.addData("power FR ", pFR);
+                mOpMode.telemetry.addData("power BR ", pBR);
+                mOpMode.telemetry.addData("power FL ", pFL);
+                mOpMode.telemetry.addData("power BL ", pBL);
             }
 
             // guidance step always returns "done" so the CS in which it is embedded completes when
