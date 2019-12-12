@@ -77,20 +77,23 @@ public class SquirrelyDrive1 extends OpMode {
 	@Override
 	public void loop() {
 
+		final double deadband = 0.05;
+
 		// turning drive is on the left stick
 		float tx = gamepad1.left_stick_x;
 		float ty = -gamepad1.left_stick_y;	// y is reversed :(
+
+		// deadband to avoid zero-stick drifting
+		if (Math.abs(tx) < deadband) tx = 0;
+		if (Math.abs(ty) < deadband) ty = 0;
+
+		// scale the drive joystick value to make it easier to control the robot more precisely at slower speeds.
+		// don't scale the turn value - doing so makes turning much to sluggish.
+		ty = (float)scaleInput(ty);
+
+		// compute the drive+turn powers
 		float left = (ty + tx/2);
 		float right = (ty - tx/2);
-
-		// clip the right/left values so that the values never exceed +/- 1
-		left = Range.clip(left, -1, 1);
-		right = Range.clip(right, -1, 1);
-
-		// scale the joystick values to make it easier to control
-		// the robot more precisely at slower speeds.
-		//left =  (float)scaleInput(left);
-		//right = (float)scaleInput(right);
 
 		// squirrely drive is on the right stick
 		float x = gamepad1.right_stick_x;
@@ -111,6 +114,13 @@ public class SquirrelyDrive1 extends OpMode {
 
 		// power is the magnitude of the stick vector
 		double power = Math.sqrt(x*x + y*y);
+
+		// deadband to avoid zero-stick drifting
+		if (Math.abs(power) < deadband)
+			power = 0;
+
+		// scale the joystick values to make it easier to control the robot more precisely at slower speeds.
+		power =  scaleInput(power);
 
 		// scale the values by the desired power
 		rightFacing *= power;
@@ -133,7 +143,7 @@ public class SquirrelyDrive1 extends OpMode {
 		/*
 		 * Send telemetry data back to driver station.
 		 */
-		telemetry.addData("Text", "*** v1.1 ***");
+		telemetry.addData("SquirrelyDrive1", "*** v1.5 ***");
 		telemetry.addData("front left/right power:", "%.2f %.2f", fl, fr);
 		telemetry.addData("back left/right power:", "%.2f %.2f", bl, br);
 		telemetry.addData("heading:", "%.2f", heading);
