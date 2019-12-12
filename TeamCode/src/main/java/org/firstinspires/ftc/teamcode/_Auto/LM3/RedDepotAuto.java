@@ -23,6 +23,7 @@ public class RedDepotAuto extends OpMode {
     DcMotor motors[];
     AutoLib.Sequence seq;
     Servo serv;
+    float hsv[];
 
     boolean done;
 
@@ -46,7 +47,7 @@ public class RedDepotAuto extends OpMode {
     public void init(){
         int i = 1;
         float uniPow = 0.33f;
-
+        hsv = new float[3];
         motors = new DcMotor[4];
         robot.init(hardwareMap);
 
@@ -63,6 +64,7 @@ public class RedDepotAuto extends OpMode {
         clrSnr = robot.lClr;
         dstSnr = robot.lDist;
 
+        Color.RGBToHSV(clrSnr.red(), clrSnr.green(), clrSnr.blue(), hsv);
         seq = new AutoLib.LinearSequence();
 
         //Align with the first stone
@@ -72,7 +74,8 @@ public class RedDepotAuto extends OpMode {
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(4), false));
 
         //Start testing loop
-        while(/*Stone.color &&*/ dstSnr.getDistance(DistanceUnit.INCH) < 10){
+        while(isStone(hsv[0], hsv[1], hsv[2]) && dstSnr.getDistance(DistanceUnit.INCH) < 10){
+            telemetry.addData("That's a stone m8", "");
             seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(4), false));
             i++;
         }
@@ -96,6 +99,22 @@ public class RedDepotAuto extends OpMode {
         else{
             telemetry.addData("Sequence finished", "");
         }
+    }
+    public boolean isStone(float h, float s, float v){ //TODO: Make more accurate (currently only accurate from 3-5in)
+        float stone[] = new float[3];
+        stone[0] = 35; //h
+        stone[1] = 0.78f; //s
+        stone[2] = 0.5f; //v
+        boolean out = false;
+
+        if(h >= stone[0]-5 && h <= stone[0]+5){ //r +- standard dev
+            out = true;
+        }
+        else {
+            out = false;
+        }
+
+        return out;
     }
     @Override
     public void stop(){

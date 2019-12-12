@@ -150,12 +150,8 @@ public class GobbleGobbleTeleop extends OpMode{
         stone[2] = 0.5f; //v
         boolean out = false;
 
-        if(h >= stone[0]-10 && h <= stone[0]+10){ //r +- standard dev
-            if(s >= stone[1]-0.25f && s <= stone[1]+0.25f){ //g +- standard dev
-                if(v >= stone[2]-0.25f && v <= stone[2]+0.25f){ //b +- standard dev
-                    out = true;
-                }
-            }
+        if(h >= stone[0]-5 && h <= stone[0]+5 && distSnr.getDistance(DistanceUnit.INCH) <= 10){ //r +- standard dev
+            out = true;
         }
         else {
             out = false;
