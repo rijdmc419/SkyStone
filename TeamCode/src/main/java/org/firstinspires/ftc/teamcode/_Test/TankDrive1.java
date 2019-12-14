@@ -39,21 +39,18 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
+
 /**
  * TeleOp Mode
  * <p>
  * Enables control of the robot via the gamepad
  */
 @TeleOp(name="TankDrive1", group="Test")  // @Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class TankDrive1 extends OpMode {
 
-	DcMotor motorFrontRight;
-	DcMotor motorFrontLeft;
-	DcMotor motorBackRight;
-	DcMotor motorBackLeft;
-
-	boolean bDebug = false;
+	RobotHardware rh;
 
 	/**
 	 * Constructor
@@ -69,29 +66,9 @@ public class TankDrive1 extends OpMode {
 	 */
 	@Override
 	public void init() {
-		/*
-		 * Use the hardwareMap to get the dc motors and servos by name. Note
-		 * that the names of the devices must match the names used when you
-		 * configured your robot and created the configuration file.
-		 */
-		
-		/*
-		 * For this test, we assume the following,
-		 *   There are four motors
-		 *   "fl" and "bl" are front and back left wheels
-		 *   "fr" and "br" are front and back right wheels
-		 */
-		try {
-			motorFrontRight = hardwareMap.dcMotor.get("fr");
-			motorFrontLeft = hardwareMap.dcMotor.get("fl");
-			motorBackRight = hardwareMap.dcMotor.get("br");
-			motorBackLeft = hardwareMap.dcMotor.get("bl");
-			motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
-			motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
-		}
-		catch (IllegalArgumentException iax) {
-			bDebug = true;
-		}
+		// get hardware
+		rh = new RobotHardware();
+		rh.init(this);
 	}
 
 	/*
@@ -116,13 +93,11 @@ public class TankDrive1 extends OpMode {
 		left =  (float)scaleInput(left);
 		right = (float)scaleInput(right);
 
-		// write the values to the motors - for now, front and back motors on each side are set the same
-		if (!bDebug) {
-			motorFrontRight.setPower(right);
-			motorBackRight.setPower(right);
-			motorFrontLeft.setPower(left);
-			motorBackLeft.setPower(left);
-		}
+		// write the values to the motors - for tank drive, front and back motors on each side are set the same
+		rh.mMotors[0].setPower(right);
+		rh.mMotors[1].setPower(right);
+		rh.mMotors[2].setPower(left);
+		rh.mMotors[3].setPower(left);
 
 		/*
 		 * Send telemetry data back to driver station. Note that if we are using

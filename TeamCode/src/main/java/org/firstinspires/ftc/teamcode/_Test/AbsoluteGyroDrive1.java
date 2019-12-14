@@ -41,30 +41,31 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
+import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /*
  * TeleOp Mode
  * Enables control of the robot via the gamepad such that the robot moves in the
  * absolute direction and speed indicated by the left joystick, assuming the game console is
- * aligned with the robot when the mode is initiated.
+ * aligned with the robot when the mode is initiated. This code assumes a normal drive type,
+ * so the robot always points in the direction it's going and it always moves forward.
+ *
+ * We delegate the work of actually controlling the robot to a Step in Autolib that already does
+ * what we want -- an AzimuthTimedDriveStep drives the robot for a given time along a
+ * given direction. See comments in Autolib for more details.
+ * In this case, rather than using the Step in an autonomous sequence,
+ * our opmode's loop() function updates the power and direction of the Step from the
+ * current gamepad inputs and then runs its loop() function to let it compute the required motor power
+ * settings and update the motors, just as it would in an autonomous sequence. We set the time of the
+ * Step to a large value (10000) so it won't terminate on its own while we're driving.
  */
 
 @TeleOp(name="AbsoluteGyroDrive1", group="Test")  // @Autonomous(...) is the other common choice
-@Disabled
+//@Disabled
 public class  AbsoluteGyroDrive1 extends OpMode {
 
-	DcMotor motorFrontRight;
-	DcMotor motorFrontLeft;
-	DcMotor motorBackRight;
-	DcMotor motorBackLeft;
-
-	boolean bDebug = false;
-
 	AutoLib.AzimuthTimedDriveStep mStep;
-
-	BNO055IMUHeadingSensor mIMU;
-
-	DcMotor mMotors[];
+	RobotHardware rh;
 
 	/**
 	 * Constructor
@@ -75,40 +76,12 @@ public class  AbsoluteGyroDrive1 extends OpMode {
 
 	@Override
 	public void init() {
-
-		/*
-		 * For this test, we assume the following,
-		 *   There are four motors
-		 *   "fl" and "bl" are front and back left wheels
-		 *   "fr" and "br" are front and back right wheels
-		 */
-		try {
-			AutoLib.HardwareFactory mf = null;
-			final boolean debug = false;
-			if (debug)
-				mf = new AutoLib.TestHardwareFactory(this);
-			else
-				mf = new AutoLib.RealHardwareFactory(this);
-
-			// get the motors: depending on the factory we created above, these may be
-			// either dummy motors that just log data or real ones that drive the hardware
-			// assumed order is fr, br, fl, bl
-			mMotors = new DcMotor[4];
-			mMotors[0] = mf.getDcMotor("fr");
-			mMotors[1] = mf.getDcMotor("br");
-			(mMotors[2] = mf.getDcMotor("fl")).setDirection(DcMotor.Direction.REVERSE);
-			(mMotors[3] = mf.getDcMotor("bl")).setDirection(DcMotor.Direction.REVERSE);
-
-			// get hardware IMU and wrap gyro in HeadingSensor object usable below
-			mIMU = new BNO055IMUHeadingSensor(hardwareMap.get(BNO055IMU.class, "imu"));
-			mIMU.init(7);  // orientation of REV hub in my ratbot
-		}
-		catch (IllegalArgumentException iax) {
-			bDebug = true;
-		}
+		// get hardware
+		rh = new RobotHardware();
+		rh.init(this);
 
 		// create a Step that we will use in teleop mode
-		mStep = new AutoLib.AzimuthTimedDriveStep(this, 0, mIMU, null, mMotors, 0, 0.25f,10000, false);
+		mStep = new AutoLib.AzimuthTimedDriveStep(this, 0, rh.mIMU, null, rh.mMotors, 0, 0.25f,10000, false);
 	}
 
 
