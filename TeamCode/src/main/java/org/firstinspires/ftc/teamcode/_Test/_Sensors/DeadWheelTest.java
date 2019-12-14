@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 
 /**
@@ -22,7 +21,7 @@ public class DeadWheelTest extends OpMode {
 
     public void init() {
         // get hardware
-        TestHardware.HardwareFactory mf = new TestHardware.RealHardwareFactory(this);
+        AutoLib.HardwareFactory mf = new AutoLib.RealHardwareFactory(this);
         mMotor = mf.getDcMotor("bl");       // motor 0 in reverseRatbot configuration
     }
 

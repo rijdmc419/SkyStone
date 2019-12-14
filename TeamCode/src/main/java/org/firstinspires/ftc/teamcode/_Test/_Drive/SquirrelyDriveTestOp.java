@@ -20,13 +20,25 @@ public class SquirrelyDriveTestOp extends OpMode {
 
     AutoLib.Sequence mSequence;             // the root of the sequence tree
     boolean bDone;                          // true when the programmed sequence is done
-    RobotHardware rh;                       // standard hardware set for these tests
+    DcMotor mMotors[];                      // motors, some of which can be null: assumed order is fr, br, fl, bl
 
     @Override
     public void init() {
-        // get hardware
-        rh = new RobotHardware();
-        rh.init(this);
+        AutoLib.HardwareFactory mf = null;
+        final boolean debug = false;
+        if (debug)
+            mf = new AutoLib.TestHardwareFactory(this);
+        else
+            mf = new AutoLib.RealHardwareFactory(this);
+
+        // get the motors: depending on the factory we created above, these may be
+        // either dummy motors that just log data or real ones that drive the hardware
+        // assumed order is fr, br, fl, bl
+        mMotors = new DcMotor[4];
+        mMotors[0] = mf.getDcMotor("fr");
+        mMotors[1] = mf.getDcMotor("br");
+        (mMotors[2] = mf.getDcMotor("fl")).setDirection(DcMotor.Direction.REVERSE);
+        (mMotors[3] = mf.getDcMotor("bl")).setDirection(DcMotor.Direction.REVERSE);
 
         // create an autonomous sequence with the steps to drive
         // several legs of a polygonal course ---
@@ -36,14 +48,14 @@ public class SquirrelyDriveTestOp extends OpMode {
         mSequence = new AutoLib.LinearSequence();
 
         // add a bunch of timed "legs" to the sequence - use Gyro heading convention of positive degrees CCW from initial heading
-        float leg = 3.0f;  // time along each leg of the polygon
+        float leg = debug ? 2.0f : 3.0f;  // time along each leg of the polygon
 
         // drive a square
-        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(rh.mMotors, -90, power, leg/2, false));
-        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(rh.mMotors, 0, power, leg, false));
-        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(rh.mMotors, 90, power, leg, false));
-        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(rh.mMotors, 180, power, leg, false));
-        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(rh.mMotors, 270, power, leg/2, false));
+        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, -90, power, leg/2, false));
+        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, 0, power, leg, false));
+        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, 90, power, leg, false));
+        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, 180, power, leg, false));
+        mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, 270, power, leg/2, false));
 
       /* // ... and then a diamond
         mSequence.add(new AutoLib.MoveSquirrelyByTimeStep(mMotors, -45, power, leg, false));

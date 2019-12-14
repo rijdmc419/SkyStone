@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
-import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 // example of a base class for a bunch of Autonomous OpModes that all use the same (or nearly same) hardware
 public class AutoOpModeBase extends OpMode {
@@ -17,7 +16,7 @@ public class AutoOpModeBase extends OpMode {
     ModernRoboticsI2cGyro mGyro;  	        // gyro to use for heading information
     SensorLib.CorrectedMRGyro mCorrGyro;    // gyro corrector object
     SensorLib.PID mPid;                     // PID controller for the sequence
-    TestHardware.HardwareFactory mFactory;       // hardware factory - may be used by derived classes to get additional hardware
+    AutoLib.HardwareFactory mFactory;       // hardware factory - may be used by derived classes to get additional hardware
 
     // parameters of the PID controller for this sequence
     float Kp = 0.035f;        // motor power proportional term correction per degree of deviation
@@ -37,7 +36,7 @@ public class AutoOpModeBase extends OpMode {
     public void init() {
 
         boolean test = true;
-        mFactory = test ? new TestHardware.RealHardwareFactory(this) : new TestHardware.TestHardwareFactory(this);
+        mFactory = test ? new AutoLib.RealHardwareFactory(this) : new AutoLib.TestHardwareFactory(this);
 
         // get the motors: assumed order is fr, br, fl, bl
         mMotors = new DcMotor[4];

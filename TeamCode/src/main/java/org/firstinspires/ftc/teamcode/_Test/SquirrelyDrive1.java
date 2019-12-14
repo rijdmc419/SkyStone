@@ -38,7 +38,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /**
  * TeleOp Mode
@@ -46,15 +45,22 @@ import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
  * Enables control of the robot via the gamepad using Squirrely Wheels
  */
 @TeleOp(name="SquirrelyDrive1", group="Test")  // @Autonomous(...) is the other common choice
-//@Disabled
+@Disabled
 public class SquirrelyDrive1 extends OpMode {
 
-	RobotHardware rh;
+	DcMotor motorFrontRight;
+	DcMotor motorFrontLeft;
+	DcMotor motorBackRight;
+	DcMotor motorBackLeft;
+
+	boolean bDebug = false;
 
 	/**
 	 * Constructor
 	 */
-	public SquirrelyDrive1() { }
+	public SquirrelyDrive1() {
+
+	}
 
 	/*
 	 * Code to run when the op mode is first enabled goes here
@@ -63,9 +69,30 @@ public class SquirrelyDrive1 extends OpMode {
 	 */
 	@Override
 	public void init() {
-		// get hardware
-		rh = new RobotHardware();
-		rh.init(this);
+
+		/*
+		 * Use the hardwareMap to get the dc motors and servos by name. Note
+		 * that the names of the devices must match the names used when you
+		 * configured your robot and created the configuration file.
+		 */
+		
+		/*
+		 * For this test, we assume the following,
+		 *   There are four motors
+		 *   "fl" and "bl" are front and back left wheels
+		 *   "fr" and "br" are front and back right wheels
+		 */
+		try {
+			motorFrontRight = hardwareMap.dcMotor.get("fr");
+			motorFrontLeft = hardwareMap.dcMotor.get("fl");
+			motorBackRight = hardwareMap.dcMotor.get("br");
+			motorBackLeft = hardwareMap.dcMotor.get("bl");
+			motorFrontLeft.setDirection(DcMotor.Direction.REVERSE);
+			motorBackLeft.setDirection(DcMotor.Direction.REVERSE);
+		}
+		catch (IllegalArgumentException iax) {
+			bDebug = true;
+		}
 	}
 
 
@@ -77,23 +104,20 @@ public class SquirrelyDrive1 extends OpMode {
 	@Override
 	public void loop() {
 
-		final double deadband = 0.05;
-
 		// turning drive is on the left stick
 		float tx = gamepad1.left_stick_x;
 		float ty = -gamepad1.left_stick_y;	// y is reversed :(
-
-		// deadband to avoid zero-stick drifting
-		if (Math.abs(tx) < deadband) tx = 0;
-		if (Math.abs(ty) < deadband) ty = 0;
-
-		// scale the drive joystick value to make it easier to control the robot more precisely at slower speeds.
-		// don't scale the turn value - doing so makes turning much to sluggish.
-		ty = (float)scaleInput(ty);
-
-		// compute the drive+turn powers
 		float left = (ty + tx/2);
 		float right = (ty - tx/2);
+
+		// clip the right/left values so that the values never exceed +/- 1
+		left = Range.clip(left, -1, 1);
+		right = Range.clip(right, -1, 1);
+
+		// scale the joystick values to make it easier to control
+		// the robot more precisely at slower speeds.
+		//left =  (float)scaleInput(left);
+		//right = (float)scaleInput(right);
 
 		// squirrely drive is on the right stick
 		float x = gamepad1.right_stick_x;
@@ -107,43 +131,36 @@ public class SquirrelyDrive1 extends OpMode {
 		double theta = Math.atan2(-x, y);	// stick angle: zero = +y, positive CCW, range +-pi
 		double heading = theta * 180.0/Math.PI;		// radians to degrees
 
-		// compute left-side front and back wheel relative speeds needed to go in desired direction
+		// compute front and back wheel relative speeds needed to go in desired direction
 		AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(heading);
-		double rightFacing = mp.RightFacing();
-		double leftFacing = mp.LeftFacing();
+		double front = mp.Front();
+		double back = mp.Back();
 
 		// power is the magnitude of the stick vector
 		double power = Math.sqrt(x*x + y*y);
 
-		// deadband to avoid zero-stick drifting
-		if (Math.abs(power) < deadband)
-			power = 0;
-
-		// scale the joystick values to make it easier to control the robot more precisely at slower speeds.
-		power =  scaleInput(power);
-
 		// scale the values by the desired power
-		rightFacing *= power;
-		leftFacing *= power;
+		front *= power;
+		back *= power;
 
-		// combine turning and squirrely drive inputs assuming "standard" arrangement
-		// of mecanum wheels with roller axles pointing toward bot center
-		// which is equivalent to X-drive.
-		double fr = Range.clip(leftFacing+right, -1, 1);
-		double br = Range.clip(rightFacing+right, -1, 1);
-		double fl = Range.clip(rightFacing+left, -1, 1);
-		double bl = Range.clip(leftFacing+left, -1, 1);
+		// combine turning and squirrely drive inputs and
+		double fr = Range.clip(front+right, -1, 1);
+		double br = Range.clip(back+right, -1, 1);
+		double fl = Range.clip(front+left, -1, 1);
+		double bl = Range.clip(back+left, -1, 1);
 
 		// write the values to the motors
-		rh.mMotors[0].setPower(fr);
-		rh.mMotors[1].setPower(br);
-		rh.mMotors[2].setPower(fl);
-		rh.mMotors[3].setPower(bl);
+		if (!bDebug) {
+			motorFrontRight.setPower(fr);
+			motorBackRight.setPower(br);
+			motorFrontLeft.setPower(fl);
+			motorBackLeft.setPower(bl);
+		}
 
 		/*
 		 * Send telemetry data back to driver station.
 		 */
-		telemetry.addData("SquirrelyDrive1", "*** v1.5 ***");
+		telemetry.addData("Text", "*** v1.1 ***");
 		telemetry.addData("front left/right power:", "%.2f %.2f", fl, fr);
 		telemetry.addData("back left/right power:", "%.2f %.2f", bl, br);
 		telemetry.addData("heading:", "%.2f", heading);

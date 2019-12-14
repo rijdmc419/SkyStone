@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 //Useful Thing:
@@ -34,8 +33,7 @@ public class DepotSideAuto extends OpMode {
         lfserv = robot.lfServo;
         rfserv= robot.rfServo;
 
-        //telemetry.addData("Left Mover", fservos[0]);
-        //telemetry.addData("Right Mover", fservos[1]);
+        float uniPow = 0.33f;
 
         telemetry.addData("Left Mover", lfserv);
         telemetry.addData("Right Mover", rfserv);

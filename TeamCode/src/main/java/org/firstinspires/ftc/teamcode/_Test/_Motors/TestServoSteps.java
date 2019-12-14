@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 /**
  * Created by phanau on 12/7/18.
@@ -33,12 +32,12 @@ public class TestServoSteps extends OpMode {
 
     public void init() {
         // get hardware
-        TestHardware.HardwareFactory mf = null;
+        AutoLib.HardwareFactory mf = null;
         final boolean debug = false;
         if (debug)
-            mf = new TestHardware.TestHardwareFactory(this);
+            mf = new AutoLib.TestHardwareFactory(this);
         else
-            mf = new TestHardware.RealHardwareFactory(this);
+            mf = new AutoLib.RealHardwareFactory(this);
 
         // get the servo: depending on the factory we created above, these may be
         // either dummy motors that just log data or real ones that drive the hardware

@@ -9,12 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.vuforia.Frame;
 import com.vuforia.Image;
 import com.vuforia.PIXEL_FORMAT;
-import com.vuforia.TrackableResult;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
 import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
@@ -78,61 +75,12 @@ class myVuforiaLocalizerImpl extends VuforiaLocalizerImpl
     public void _close()  { close(); }
 }
 
-// derive our own Listener from the default VuforiaTrackableDefaultListener so we can add checking of
-// detection status --- we need to know when detection is iffy so we can ignore bad location data.
-class myVuforiaTrackableDefaultListener extends VuforiaTrackableDefaultListener
-{
-    /*
-        public static final class STATUS {
-        public static final int NO_POSE = 0;
-        public static final int LIMITED = 1;
-        public static final int DETECTED = 2;
-        public static final int TRACKED = 3;
-        public static final int EXTENDED_TRACKED = 4;
 
-        private STATUS() {
-        }
-     */
-    private int mStatus = 0;
-
-    /*
-        public static final class STATUS_INFO {
-        public static final int NORMAL = 0;
-        public static final int UNKNOWN = 1;
-        public static final int INITIALIZING = 2;
-        public static final int EXCESSIVE_MOTION = 3;
-        public static final int INSUFFICIENT_FEATURES = 4;
-
-        public STATUS_INFO() {
-        }
-    }
-    */
-    private int mStatusInfo = 0;
-
-    public myVuforiaTrackableDefaultListener(VuforiaTrackable trackable) {
-        super(trackable);
-    }
-
-        @Override public void onTracked(TrackableResult trackableResult, CameraName cameraName, Camera camera, VuforiaTrackable child)
-    {
-        super.onTracked(trackableResult, cameraName, camera, child);
-        mStatus = trackableResult.getStatus();
-        mStatusInfo = trackableResult.getStatusInfo();
-    }
-
-    public int getStatus() { return mStatus; }
-    public int getStatusInfo() { return mStatusInfo; }
-}
-
-// wrapper around Vuforia stuff that handles details like positioning targets and camera, supplying key, etc.
 public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
 
     myVuforiaLocalizerImpl vuforia;
     VuforiaTrackables targetsSkyStone = null;
     List<VuforiaTrackable> allTrackables;
-    List<String> visibleTrackables;
-    int trackableStatus;
-    int trackableStatusInfo;
     OpenGLMatrix lastLocation = null;
     OpMode mOpMode;
 
@@ -173,9 +121,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     private float phoneYRotate    = 0;
     private float phoneZRotate    = 0;
 
-    private VuforiaTrackable stoneTarget = null;
-
-    public void init(OpMode opMode) {
+    public void init(OpMode opMode, String licenseKey) {
 
         // remember this so we can do telemetry output
         mOpMode = opMode;
@@ -220,9 +166,9 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
 
         // Load the data sets for the trackable objects. These particular data
         // sets are stored in the 'assets' part of our application.
-        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone", myVuforiaTrackableDefaultListener.class);
+        targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
 
-        stoneTarget = targetsSkyStone.get(0);
+        VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
         stoneTarget.setName("Stone Target");
         VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
         blueRearBridge.setName("Blue Rear Bridge");
@@ -253,8 +199,6 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
         allTrackables = new ArrayList<VuforiaTrackable>();
         allTrackables.addAll(targetsSkyStone);
 
-        // create this list too
-        visibleTrackables = new ArrayList<String>();
 
         /**
          * In order for localization to work, we need to tell the system where each target is on the field, and
@@ -287,7 +231,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, bridgeRotY, bridgeRotZ)));
 
         blueRearBridge.setLocation(OpenGLMatrix
-                .translation(bridgeX, bridgeY, bridgeZ)
+                .translation(-bridgeX, bridgeY, bridgeZ)
                 .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 0, -bridgeRotY, bridgeRotZ)));
 
         redFrontBridge.setLocation(OpenGLMatrix
@@ -359,9 +303,9 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
 
         // Next, translate the camera lens to where it is on the robot.
         // In this example, it is centered (left to right), but forward of the middle of the robot, and above ground level.
-        final float CAMERA_FORWARD_DISPLACEMENT  = 8.0f * mmPerInch;   // eg: Camera is x Inches in front of robot center (ratbot)
-        final float CAMERA_LEFT_DISPLACEMENT     = 0.0f * mmPerInch;   // eg: Camera is ON the robot's center line
-        final float CAMERA_VERTICAL_DISPLACEMENT = 6.0f * mmPerInch;   // eg: Camera is z Inches above ground
+        final float CAMERA_FORWARD_DISPLACEMENT  = 4.0f * mmPerInch;   // eg: Camera is 4 Inches in front of robot center
+        final float CAMERA_VERTICAL_DISPLACEMENT = 8.0f * mmPerInch;   // eg: Camera is 8 Inches above ground
+        final float CAMERA_LEFT_DISPLACEMENT     = 0;     // eg: Camera is ON the robot's center line
 
         OpenGLMatrix robotFromCamera = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
@@ -412,36 +356,20 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     public void loop(boolean bTelemetry)
     {
         lastLocation = null;    // reset each time so we can tell if we currently have any target visible
-        visibleTrackables.clear();
-        trackableStatus = -1;   // invalid value
-        trackableStatusInfo = -1;
 
         for (VuforiaTrackable trackable : allTrackables) {
+            /**
+             * getUpdatedRobotLocation() will return null if no new information is available since
+             * the last time that call was made, or if the trackable is not currently visible.
+             * getRobotLocation() will return null if the trackable is not currently visible.
+             */
+            if (bTelemetry && ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible())
+                mOpMode.telemetry.addData(trackable.getName(), "Visible");    //
 
-            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                // get status data to see if we can trust this info
-                trackableStatus = ((myVuforiaTrackableDefaultListener)trackable.getListener()).getStatus();
-                trackableStatusInfo = ((myVuforiaTrackableDefaultListener)trackable.getListener()).getStatusInfo();
-
-                if (bTelemetry) {
-                    mOpMode.telemetry.addData(trackable.getName(), "Visible");    //
-                    mOpMode.telemetry.addData("status", trackableStatus);
-                    mOpMode.telemetry.addData("statusInfo", trackableStatusInfo);
-                }
-
-                visibleTrackables.add(trackable.getName());
-
-                /**
-                 * getUpdatedRobotLocation() will return null if no new information is available since
-                 * the last time that call was made, or if the trackable is not currently visible.
-                 * getRobotLocation() will return null if the trackable is not currently visible.
-                 */
-                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener) trackable.getListener()).getRobotLocation();
-                if (robotLocationTransform != null) {
-                    lastLocation = robotLocationTransform;
-                }
+            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getRobotLocation();
+            if (robotLocationTransform != null) {
+                lastLocation = robotLocationTransform;
             }
-
         }
 
         /**
@@ -515,32 +443,15 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
     {
         return getYaw();
     }
-
-    public float getHeadingVelocity()
-    {
-        return 0;
-    }
-
     public boolean haveHeading()
     {
         return (lastLocation != null);
     }
-
     public void setHeadingOffset(float offset) {}   // not used; Vuforia headings are field-absolute
 
     // implements LocationSensor interface
     public VectorF getLocation() { return getFieldPosition(); }
     public boolean haveLocation() { return (lastLocation != null);}       // is there valid location data?
-
-    // get a list of the names of the currently visible trackables
-    public List<String> getVisibleNames() { return visibleTrackables; }
-
-    // get tracking quality info
-    public int getTrackableStatus() { return trackableStatus; }
-    public int getTrackableStatusInfo() { return trackableStatusInfo; }
-
-    // get the Stone target so we can determine if we've seen that one
-    public VuforiaTrackable getStoneTarget() { return stoneTarget; }
 
     /**
      * Some simple utilities that extract information from a transformation matrix
@@ -548,14 +459,13 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
      * For sanity's sake, display translations in inches rather than mm.
      */
 
-    public String formatPosition(OpenGLMatrix transformationMatrix) {
+    String formatPosition(OpenGLMatrix transformationMatrix) {
         //return transformationMatrix.formatAsTransform();
         VectorF translation = transformationMatrix.getTranslation();
         translation.multiply(1.0f/25.4f);       // convert from mm to inches
         return String.format("%s inches", translation.toString());
     }
-
-    public String formatOrientation(OpenGLMatrix transformationMatrix) {
+    String formatOrientation(OpenGLMatrix transformationMatrix) {
         //return transformationMatrix.formatAsTransform();
         Orientation orientation = Orientation.getOrientation(transformationMatrix, AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES);
         return String.format("%s", orientation.toString());
@@ -688,9 +598,9 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
      */
     private TFObjectDetector tfod = null;
 
-    private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
-    private static final String LABEL_STONE = "Stone";
-    private static final String LABEL_SKYSTONE = "Skystone";
+    private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
+    private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
+    private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
 
     /**
      * Initialize the Tensor Flow Object Detection engine.
@@ -702,7 +612,7 @@ public class VuforiaLib_SkyStone implements HeadingSensor, LocationSensor {
                     "tfodMonitorViewId", "id", opmode.hardwareMap.appContext.getPackageName());
             TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
             tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_STONE, LABEL_SKYSTONE);
+            tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
             return tfod;
         }
         return null;
