@@ -15,11 +15,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -387,8 +383,8 @@ public class AutoLib {
             // we need a little state machine to make the encoders happy
             if (firstLoopCall()) {
                 // set up the motor on our first call
-                mMotor.setTargetPosition(mMotor.getCurrentPosition() + mEncoderCount);
                 mMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                mMotor.setTargetPosition(mMotor.getCurrentPosition() + mEncoderCount);  // count is RELATIVE to NOW
                 mMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 mMotor.setPower(mPower);
             }
@@ -762,40 +758,6 @@ public class AutoLib {
 
     }
 
-    // dummy drive step for debug mode where we don't have motors or gyros
-    static public class MotorLogStep extends AutoLib.MotorGuideStep implements AutoLib.SetDirectionHeadingPower {
-        OpMode mOpMode;
-
-        public MotorLogStep(OpMode opmode) {
-            mOpMode = opmode;
-        }
-
-        public void setDirection(float direction)              // absolute
-        {
-            mOpMode.telemetry.addData("setDirection", direction);
-        }
-        public void setRelativeDirection(float direction)      // relative to current orientation (heading)
-        {
-            mOpMode.telemetry.addData("setRelativeDirection", direction);
-        }
-        public void setHeading(float heading)
-        {
-            mOpMode.telemetry.addData("setHeading", heading);
-        }
-        public void setPower(float power)
-        {
-            mOpMode.telemetry.addData("setPower", power);
-        }
-        public void setMaxPower(float power)
-        {
-            mOpMode.telemetry.addData("setMaxPower", power);
-        }
-
-        public boolean loop() {
-            return false;
-        }
-    }
-
     // a Step that waits for valid location and heading data to be available --- e.g from Vuforia --
     // when added to either a dead reckoning or gyro-based movement step, it can be used to end that step
     // when we're close enough to the targets for Vuforia to start being used. The base step should be
@@ -917,9 +879,10 @@ public class AutoLib {
                     steps.add(step);
                 }
 
-            // if there's a separate terminator step, tell it about the motor steps and add it to the sequence
+            // if there's a separate terminator step, tell it about the motor steps and add it to the sequence ---
+            // it needs to go BEFORE the motor steps so it can stop by zeroing the motor step power settings before they run.
             if (terminatorStep != null) {
-                terminatorStep.set(steps);
+                terminatorStep.set(steps);      // tell the terminator step about the motor control steps in case it wants to stop them
                 this.preAdd(terminatorStep);
             }
 
@@ -938,21 +901,6 @@ public class AutoLib {
     }
 
 
-    // a Step that provides gyro-based guidance to motors controlled by other concurrent Steps (e.g. encoder or time-based)
-    // driving "squirrely wheels" that can move sideways by differential turning of front vs. back wheels.
-    // assumes 4 concurrent drive motor steps in order right front, right back, left front, left back.
-    // this step tries to maintain the robot's absolute orientation (heading) given by the gyro by adjusting the left vs. right motors
-    // while the front vs. back power is adjusted to translate in the desired absolute direction.
-    static public class SquirrelyGyroGuideStep extends AutoLib.MotorGuideStep implements SetDirectionHeadingPower {
-        private float mPower;                               // basic power setting of all 4 motors -- adjusted for steering along path
-        private float mDirection;                           // absolute direction along which the robot should move (0 ahead; positive CCW)
-        private float mHeading;                             // absolute orientation the robot should maintain while moving
-        private OpMode mOpMode;                             // needed so we can log output (may be null)
-        private HeadingSensor mGyro;                        // sensor to use for heading information (e.g. Gyro or Vuforia)
-        private SensorLib.PID mPid;                         // proportional–integral–derivative controller (PID controller)
-        private double mPrevTime;                           // time of previous loop() call
-        private ArrayList<AutoLib.SetPower> mMotorSteps;    // the motor steps we're guiding - assumed order is fr, br, fl, bl
-        private float mMaxPower;                            // max allowed power including direction correction
 
         public SquirrelyGyroGuideStep(OpMode mode, float direction, float heading, HeadingSensor gyro, SensorLib.PID pid,
                                       ArrayList<AutoLib.SetPower> motorsteps, float power) {
@@ -971,7 +919,7 @@ public class AutoLib {
                 mPid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
             }
             mMotorSteps = motorsteps;
-            mMaxPower = power;
+            mPower = mMaxPower = power;
         }
 
         // set max allowed power including direction correction ---
@@ -1051,30 +999,6 @@ public class AutoLib {
             return true;
         }
 
-    }
-
-    static public class GyroInit extends Step {
-        BNO055IMUHeadingSensor mGyro;
-        AutoLib.Timer mTimer = new AutoLib.Timer(1);
-
-        public GyroInit(BNO055IMUHeadingSensor gyro) {
-            mGyro = gyro;
-        }
-
-        @Override
-        public boolean loop() {
-            super.loop();
-
-            if (firstLoopCall()) {
-                mGyro.init(4);
-                mTimer.start();
-            }
-
-            if(mTimer.done()) {
-                return true;
-            }
-            return false;
-        }
     }
 
 
@@ -1259,6 +1183,190 @@ public class AutoLib {
     }
 
 
+    // using the given PositionIntegrator, return done when we're within tolerance distance of a given target position --
+    // if motors are supplied, stop them when we're done.
+    static public class PositionTerminatorStep extends AutoLib.MotorGuideStep {
+
+        OpMode mOpMode;
+        SensorLib.PositionIntegrator mPosInt;
+        Position mTarget;
+        double mTol;
+        double mPrevDist;
+        boolean mStop;
+        ArrayList<AutoLib.SetPower> mMotorsteps;
+
+        public PositionTerminatorStep(OpMode opmode, SensorLib.PositionIntegrator posInt, Position target, double tol, boolean stop) {
+            mOpMode = opmode;
+            mPosInt = posInt;
+            mTarget = target;
+            mTol = tol;
+            mStop = stop;
+            mPrevDist = 1e6;    // infinity
+        }
+
+        public void set(ArrayList<AutoLib.SetPower> motorsteps){
+            mMotorsteps = motorsteps;
+        }
+
+        @Override
+        public boolean loop() {
+            super.loop();
+            Position current = mPosInt.getPosition();
+            double dist = Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("PTS target", String.format("%.2f", mTarget.x) + ", " + String.format("%.2f", mTarget.y));
+                mOpMode.telemetry.addData("PTS current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
+                mOpMode.telemetry.addData("PTS dist", String.format("%.2f", dist));
+            }
+            boolean bDone = (dist < mTol);
+
+            // try to deal with "circling the drain" problem -- when we're close to the tolerance
+            // circle, but we can't turn sharply enough to get into it, we circle endlessly --
+            // if we detect that situation, just give up and move on.
+            // simple test: if we're close but the distance to the target increases, we've missed it.
+            if (dist < mTol*4 && dist > mPrevDist)
+                bDone = true;
+            mPrevDist = dist;
+
+            // optionally stop the motors when we're done
+            if (bDone && mStop) {
+                for (AutoLib.SetPower m : mMotorsteps) {
+                    m.setPower(0);
+                }
+            }
+
+            return bDone;
+        }
+    }
+
+
+    // some Steps that control a robot with "squirrely" wheels -- i.e. a robot that can move sideways using
+    // e.g. Mecanum wheels or X-Drive
+
+    // a Step that provides gyro-based guidance to motors controlled by other concurrent Steps (e.g. encoder or time-based)
+    // driving "squirrely wheels" that can move sideways by differential turning of front vs. back wheels.
+    // assumes 4 concurrent drive motor steps in order right front, right back, left front, left back.
+    // this step tries to maintain the robot's absolute orientation (heading) given by the gyro by adjusting the left vs. right motors
+    // while the front vs. back power is adjusted to translate in the desired absolute direction.
+    static public class SquirrelyGyroGuideStep extends AutoLib.MotorGuideStep implements SetDirectionHeadingPower {
+        private float mPower;                               // basic power setting of all 4 motors -- adjusted for steering along path
+        private float mDirection;                           // absolute direction along which the robot should move (0 ahead; positive CCW)
+        private float mHeading;                             // absolute orientation the robot should maintain while moving
+        private OpMode mOpMode;                             // needed so we can log output (may be null)
+        private HeadingSensor mGyro;                        // sensor to use for heading information (e.g. Gyro or Vuforia)
+        private SensorLib.PID mPid;                         // proportional–integral–derivative controller (PID controller)
+        private double mPrevTime;                           // time of previous loop() call
+        private ArrayList<AutoLib.SetPower> mMotorSteps;    // the motor steps we're guiding - assumed order is fr, br, fl, bl
+        private float mMaxPower;                            // max allowed power including direction correction
+
+        public SquirrelyGyroGuideStep(OpMode mode, float direction, float heading, HeadingSensor gyro, SensorLib.PID pid,
+                                      ArrayList<AutoLib.SetPower> motorsteps, float power) {
+            mOpMode = mode;
+            mDirection = direction;
+            mHeading = heading;
+            mGyro = gyro;
+            if (pid != null)
+                mPid = pid;     // client is supplying PID controller for correcting heading errors
+            else {
+                // construct a default PID controller for correcting heading errors
+                final float Kp = 0.05f;        // degree heading proportional term correction per degree of deviation
+                final float Ki = 0.02f;        // ... integrator term
+                final float Kd = 0.0f;         // ... derivative term
+                final float KiCutoff = 3.0f;   // maximum angle error for which we update integrator
+                mPid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+            }
+            mMotorSteps = motorsteps;
+            mPower = mMaxPower = power;
+        }
+
+        // set max allowed power including direction correction ---
+        // e.g. to turn in place slowly, set power=0 and maxPower<1.0
+        public void setMaxPower(float mp) {
+            mMaxPower = mp;
+        }
+
+        // set motor control steps this step should control (assumes ctor called with null argument)
+        public void set(ArrayList<AutoLib.SetPower> motorsteps)
+        {
+            mMotorSteps = motorsteps;
+        }
+
+        // update target direction, heading, and power --
+        // used by interactive teleop modes to redirect the step from controller input
+        // and by e.g. camera based guide steps to steer the robot to a target
+        public void setDirection(float direction) { mDirection = direction; }
+        public void setRelativeDirection(float direction) { mDirection = mGyro.getHeading() + direction; }
+        public void setHeading(float heading) { mHeading = heading; }
+        public void setPower(float power) { mPower = power; }
+
+        public boolean loop()
+        {
+            super.loop();
+
+            // initialize previous-time on our first call -> dt will be zero on first call
+            if (firstLoopCall()) {
+                mPrevTime = mOpMode.getRuntime();           // use timer provided by OpMode
+            }
+
+            final float heading = mGyro.getHeading();     // get latest reading from direction sensor
+            // convention is positive angles CCW, wrapping from 359-0
+
+            final float error = SensorLib.Utils.wrapAngle(heading - mHeading);   // deviation from desired heading
+            // deviations to left are positive, to right are negative
+
+            // compute delta time since last call -- used for integration time of PID step
+            final double time = mOpMode.getRuntime();
+            final double dt = time - mPrevTime;
+            mPrevTime = time;
+
+            // feed error through PID to get motor power value for heading correction
+            float hdCorr = mPid.loop(error, (float) dt);
+
+            // limit heading correction to "full blast"
+            hdCorr = Range.clip(hdCorr, -1, 1);
+
+            // relative direction we want to move is difference between requested absolute direction and CURRENT orientation
+            float relDir = SensorLib.Utils.wrapAngle(mDirection - heading);
+
+            // calculate relative front/back motor powers for fancy wheels to move us in requested relative direction
+            AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(relDir);
+
+            // calculate powers of the 4 motors ---
+            // for "standard" mecanum wheel arrangement (i.e. all roller axles pointing to bot center)
+            double pFR = mp.LeftFacing() * mPower - hdCorr;
+            double pBR = mp.RightFacing() * mPower - hdCorr;
+            double pFL = mp.RightFacing() * mPower + hdCorr;
+            double pBL = mp.LeftFacing() * mPower + hdCorr;
+
+            // normalize powers so none has magnitude > maxPower
+            double norm = normalize(mMaxPower, pFR, pBR, pFL, pBL);
+            pFR *= norm;  pBR *= norm;  pFL *= norm;  pBL *= norm;
+
+            // set the powers
+            mMotorSteps.get(0).setPower(pFR);   // fr
+            mMotorSteps.get(1).setPower(pBR);   // br
+            mMotorSteps.get(2).setPower(pFL);   // fl
+            mMotorSteps.get(3).setPower(pBL);   // bl
+
+            // log some data
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("gyro heading ", heading);
+                mOpMode.telemetry.addData("commanded heading ", mHeading);
+                mOpMode.telemetry.addData("abs direction ", mDirection);
+                mOpMode.telemetry.addData("rel direction ", relDir);
+                mOpMode.telemetry.addData("power FR ", pFR);
+                mOpMode.telemetry.addData("power BR ", pBR);
+                mOpMode.telemetry.addData("power FL ", pFL);
+                mOpMode.telemetry.addData("power BL ", pBL);
+            }
+
+            // guidance step always returns "done" so the CS in which it is embedded completes when
+            // all the motors it's controlling are done
+            return true;
+        }
+
+    }
+
     // a Step that uses gyro input to stabilize the robot orientation while driving along a given absolute heading
     // using squirrely wheels, for a given time.
     // uses a SquirrelyGyroGuideStep to adjust power to 4 motors in assumed order fr, br, fl, bl
@@ -1286,10 +1394,10 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
     // a Step that uses gyro input to stabilize the robot orientation while driving along a given absolute heading
@@ -1321,10 +1429,10 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
 
     // a Step that uses gyro input to stabilize the robot orientation while driving along a given relative heading
@@ -1363,11 +1471,168 @@ public class AutoLib {
         // update target direction, heading, and power --
         // used e.g. by interactive teleop modes to redirect the step from controller input
         public void setDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setDirection(direction); }
-        public void setRelativeDirection(float direction) { ((GyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
+        public void setRelativeDirection(float direction) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setRelativeDirection(direction); }
         public void setHeading(float heading) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setHeading(heading); }
         public void setPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setPower(power); }
-        public void setMaxPower(float power) { ((GyroGuideStep)mSteps.get(0)).setMaxPower(power); }
+        public void setMaxPower(float power) { ((SquirrelyGyroGuideStep)mSteps.get(0)).setMaxPower(power); }
     }
+
+    static public class SqGyroPosIntGuideStep extends AutoLib.SquirrelyGyroGuideStep {
+
+        OpMode mOpMode;
+        Position mTarget;
+        SensorLib.EncoderGyroPosInt mPosInt;
+        double mTol;
+        float mMaxPower;
+        float mMinPower = 0.25f;
+        float mSgnPower;
+
+        public SqGyroPosIntGuideStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, Position target, float heading,
+                                     SensorLib.PID pid, ArrayList<AutoLib.SetPower> motorsteps, float power, double tol) {
+            // this.preAdd(new SquirrelyGyroGuideStep(mode, direction, heading, gyro, pid, steps, power));
+            super(opmode, 0, heading, posInt.getGyro(), pid, motorsteps, power);
+            mTarget = target;
+            mPosInt = posInt;
+            mTol = tol;
+            mMaxPower = Math.abs(power);
+            mSgnPower = (power > 0) ? 1 : -1;
+        }
+
+        public boolean loop() {
+            // run the EncoderGyroPosInt to update its position based on encoders and gyro
+            mPosInt.loop();
+
+            // update the SquirrelyGyroGuideStep direction to continue heading for the target
+            // while maintaining the heading (orientation) given for this Step
+            float direction = (float) HeadingToTarget(mTarget, mPosInt.getPosition());
+            super.setDirection(direction);
+
+            // when we're close to the target, reduce speed so we don't overshoot
+            Position current = mPosInt.getPosition();
+            float dist = (float)Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
+            float brakeDist = (float)mTol * 5;  // empirical ...
+            if (dist < brakeDist) {
+                float power = mSgnPower * (mMinPower + (mMaxPower-mMinPower)*(dist/brakeDist));
+                super.setMaxPower(power);
+            }
+
+            // run the underlying GyroGuideStep and return what it returns for "done" -
+            // currently, it leaves it up to the terminating step to end the Step
+            return super.loop();
+        }
+
+        private double HeadingToTarget(Position target, Position current) {
+            double headingXrad = Math.atan2((target.y - current.y), (target.x - current.x));        // pos CCW from X-axis
+            double headingYdeg = SensorLib.Utils.wrapAngle(Math.toDegrees(headingXrad) - 90.0);     // pos CCW from Y-axis
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("GPIGS.HTT target", String.format("%.2f", target.x) + ", " + String.format("%.2f", target.y));
+                mOpMode.telemetry.addData("GPIGS.HTT current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
+                mOpMode.telemetry.addData("GPIGS.HTT heading", String.format("%.2f", headingYdeg));
+            }
+            return headingYdeg;
+        }
+    }
+
+    // Step: drive to given absolute field position while facing in the given direction using given EncoderGyroPosInt
+    static public class SqPosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
+
+        SensorLib.EncoderGyroPosInt mPosInt;
+        Position mTarget;
+
+        public SqPosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
+                                   float power, SensorLib.PID pid, Position target, float heading, double tolerance, boolean stop)
+        {
+            super(opmode, new SqGyroPosIntGuideStep(opmode, posInt, target, heading, pid, null, power, tolerance),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop),
+                    motors);
+
+            mPosInt = posInt;
+            mTarget = target;
+        }
+
+    }
+
+
+    // guide step that uses a gyro and a position integrator to determine how to guide the robot to the target
+    static public class GyroPosIntGuideStep extends AutoLib.GyroGuideStep {
+
+        OpMode mOpMode;
+        Position mTarget;
+        SensorLib.EncoderGyroPosInt mPosInt;
+        double mTol;
+        float mMaxPower;
+        float mMinPower = 0.25f;
+        float mSgnPower;
+
+        public GyroPosIntGuideStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, Position target,
+                                   SensorLib.PID pid, ArrayList<AutoLib.SetPower> motorsteps, float power, double tol) {
+            super(opmode, 0, posInt.getGyro(), pid, motorsteps, power);
+            mOpMode = opmode;
+            mTarget = target;
+            mPosInt = posInt;
+            mTol = tol;
+            mMaxPower = Math.abs(power);
+            mSgnPower = (power > 0) ? 1 : -1;
+        }
+
+        public boolean loop() {
+            // run the EncoderGyroPosInt to update its position based on encoders and gyro
+            mPosInt.loop();
+
+            // update the GyroGuideStep heading to continue heading for the target
+            float direction = (float) HeadingToTarget(mTarget, mPosInt.getPosition());
+            super.setHeading(direction);
+
+            // when we're close to the target, reduce speed so we don't overshoot
+            Position current = mPosInt.getPosition();
+            float dist = (float)Math.sqrt((mTarget.x-current.x)*(mTarget.x-current.x) + (mTarget.y-current.y)*(mTarget.y-current.y));
+            float brakeDist = (float)mTol * 5;  // empirical ...
+            if (dist < brakeDist) {
+                float power = mSgnPower * (mMinPower + (mMaxPower-mMinPower)*(dist/brakeDist));
+                super.setMaxPower(power);
+            }
+
+            // run the underlying GyroGuideStep and return what it returns for "done" -
+            // currently, it leaves it up to the terminating step to end the Step
+            return super.loop();
+        }
+
+        private double HeadingToTarget(Position target, Position current) {
+            double headingXrad = Math.atan2((target.y - current.y), (target.x - current.x));        // pos CCW from X-axis
+            double headingYdeg = SensorLib.Utils.wrapAngle(Math.toDegrees(headingXrad) - 90.0);     // pos CCW from Y-axis
+            if (mOpMode != null) {
+                mOpMode.telemetry.addData("GPIGS.HTT target", String.format("%.2f", target.x) + ", " + String.format("%.2f", target.y));
+                mOpMode.telemetry.addData("GPIGS.HTT current", String.format("%.2f", current.x) + ", " + String.format("%.2f", current.y));
+                mOpMode.telemetry.addData("GPIGS.HTT heading", String.format("%.2f", headingYdeg));
+            }
+            return headingYdeg;
+        }
+    }
+
+    // Step: drive to given absolute field position using given EncoderGyroPosInt
+    static public class PosIntDriveToStep extends AutoLib.GuidedTerminatedDriveStep {
+
+        OpMode mOpMode;
+        SensorLib.EncoderGyroPosInt mPosInt;
+        Position mTarget;
+
+        public PosIntDriveToStep(OpMode opmode, SensorLib.EncoderGyroPosInt posInt, DcMotor[] motors,
+                                 float power, SensorLib.PID pid, Position target, double tolerance, boolean stop)
+        {
+            super(opmode,
+                    new GyroPosIntGuideStep(opmode, posInt, target, pid, null, power, tolerance),
+                    new PositionTerminatorStep(opmode, posInt, target, tolerance, stop),
+                    motors);
+
+            mOpMode = opmode;
+            mPosInt = posInt;
+            mTarget = target;
+        }
+
+    }
+
+
+
 
 
     // some convenience utility classes for common operations
@@ -1539,18 +1804,22 @@ public class AutoLib {
 
     // example of a class used to return multiple values from a function call
     public static class MotorPowers {
-        public double mFront;
-        public double mBack;
+        double mFront;
+        double mBack;
+
         public MotorPowers(double front, double back) {
             mFront = front;
             mBack = back;
         }
-        public double Front() { return mFront; }
-        public double Back() { return mBack; }
+        public double RightFacing() { return mFront; }
+        public double LeftFacing() { return mBack; }
     }
 
     // this function computes the relative front/back power settings needed to move along a given
     // heading, relative to the current orientation of the robot.
+    // for "standard" mecanum wheel arrangement (i.e. all roller axles pointing to bot center)
+    // i.e. "Front" (left) is a wheel whose rollers point to the right on the top of the wheel, while
+    // "Back" (left) refers to a wheel whose rollers point to the left on the top of the wheel.
     public static MotorPowers GetSquirrelyWheelMotorPowers(
             double heading    // in degrees, zero = straight ahead, positive CCW, range +-180
     )
@@ -1623,13 +1892,13 @@ public class AutoLib {
 
             // create TimedMotorSteps to control the 4 motors
             if (fr != null)
-                this.add(new TimedMotorStep(fr, mp.Front()*power, seconds, stop));
+                this.add(new TimedMotorStep(fr, mp.LeftFacing()*power, seconds, stop));
             if (br != null)
-                this.add(new TimedMotorStep(br, mp.Back()*power, seconds, stop));
+                this.add(new TimedMotorStep(br, mp.RightFacing()*power, seconds, stop));
             if (fl != null)
-                this.add(new TimedMotorStep(fl, mp.Front()*power, seconds, stop));
+                this.add(new TimedMotorStep(fl, mp.RightFacing()*power, seconds, stop));
             if (bl != null)
-                this.add(new TimedMotorStep(bl, mp.Back()*power, seconds, stop));
+                this.add(new TimedMotorStep(bl, mp.LeftFacing()*power, seconds, stop));
         }
     }
 
@@ -1706,15 +1975,15 @@ public class AutoLib {
 
             // compute motor powers needed to go in that direction
             MotorPowers mp = GetSquirrelyWheelMotorPowers(robotHeading);
-            double frontPower = mp.Front() * mPower;
-            double backPower = mp.Back() * mPower;
+            double rightFacingPower = mp.RightFacing() * mPower;
+            double leftFacingPower = mp.LeftFacing() * mPower;
 
             // reduce motor powers when we're very close to the target position
             final double slowDist = 3.0*mError;   // start slowing down when we're this close
             double distToTarget = dirToTarget.magnitude();
             if (distToTarget < slowDist) {
-                frontPower *= distToTarget/slowDist;
-                backPower  *= distToTarget/slowDist;
+                rightFacingPower *= distToTarget/slowDist;
+                leftFacingPower  *= distToTarget/slowDist;
             }
 
             // are we there yet?
@@ -1722,7 +1991,7 @@ public class AutoLib {
 
             // optionally stop motors when we reach the target position
             if (bDone && mStop)
-                frontPower = backPower = 0;
+                rightFacingPower = leftFacingPower = 0;
 
             // output debug telemetry
             mOpMode.telemetry.addData("VSGS:", "target position: %s", mTargetPosition.multiplied(1.0f/25.4f).toString());    // inches
@@ -1730,10 +1999,10 @@ public class AutoLib {
 
             // update motors
             // assumed order is fr, br, fl, bl
-            mMotorSteps.get(0).setPower(frontPower);
-            mMotorSteps.get(1).setPower(backPower);
-            mMotorSteps.get(2).setPower(frontPower);
-            mMotorSteps.get(3).setPower(backPower);
+            mMotorSteps.get(0).setPower(leftFacingPower);
+            mMotorSteps.get(1).setPower(rightFacingPower);
+            mMotorSteps.get(2).setPower(rightFacingPower);
+            mMotorSteps.get(3).setPower(leftFacingPower);
 
             return bDone;
         }
@@ -1957,6 +2226,7 @@ public class AutoLib {
         }
     }
 
+
     // test hardware classes -- useful for testing when no hardware is available.
     // these are primarily intended for use in testing autonomous mode code, but could
     // also be useful for testing tele-operator modes.
@@ -1991,7 +2261,7 @@ public class AutoLib {
             mName = name;
             mPower = 0.0;
             mMaxSpeed = 0;
-            mMode = DcMotor.RunMode.RUN_WITHOUT_ENCODERS;
+            mMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
             mTargetPosition = 0;
             mCurrentPosition = 0;
             mPowerFloat = false;
@@ -2229,7 +2499,7 @@ public class AutoLib {
          * Get the "hue"
          * @return hue
          */
-       // @ColorInt
+        //@ColorInt
         public int argb() { return 0; }
 
         /**
@@ -2299,11 +2569,12 @@ public class AutoLib {
             mOpMode = opMode;
         }
 
-        public DcMotor getDcMotor(String name) {
+        public DcMotor getDcMotor(String name){
             DcMotor motor = null;
             try {
                 motor = mOpMode.hardwareMap.dcMotor.get(name);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 // okay -- just return null (absent) for this motor
             }
 
@@ -2314,11 +2585,12 @@ public class AutoLib {
             return motor;
         }
 
-        public Servo getServo(String name) {
+        public Servo getServo(String name){
             Servo servo = null;
             try {
                 servo = mOpMode.hardwareMap.servo.get(name);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 // okay - just return null (absent) for this servo
             }
 
@@ -2329,27 +2601,30 @@ public class AutoLib {
             return servo;
         }
 
-        public GyroSensor getGyro(String name) {
+        public GyroSensor getGyro(String name){
             GyroSensor gyro = null;
             try {
                 gyro = mOpMode.hardwareMap.gyroSensor.get(name);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 // okay - just return null (absent) for this servo
             }
             return gyro;
         }
 
-        public ColorSensor getColorSensor(String name) {
+        public ColorSensor getColorSensor(String name){
             ColorSensor cs = null;
             try {
                 cs = mOpMode.hardwareMap.colorSensor.get(name);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 // okay - just return null (absent) for this servo
             }
             return cs;
         }
 
     }
+
 }
 
 
