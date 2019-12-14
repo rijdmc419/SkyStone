@@ -22,11 +22,12 @@ import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@TeleOp(name="Scott's Thanksgiving Teleop")
+@TeleOp(name="a_LM3 Teleop")
 public class GobbleGobbleTeleop extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
     Servo lfserv, rfserv;
+    Servo tserv;
     BNO055IMUHeadingSensor imu;
     ColorSensor clrSnr;
     DistanceSensor distSnr;
@@ -45,6 +46,7 @@ public class GobbleGobbleTeleop extends OpMode{
 
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
+        tserv = robot.tempServo;
         clrSnr = robot.lClr;
         distSnr = robot.lDist;
 
@@ -141,6 +143,13 @@ public class GobbleGobbleTeleop extends OpMode{
         else{
             lfserv.setPosition(1f); //up value (start)
             rfserv.setPosition(0f);
+        }
+
+        if(gamepad2.b){
+            tserv.setPosition(1f); //down val
+        }
+        else{
+            tserv.setPosition(0f); //up val (default)
         }
     }
     public boolean isStone(float h, float s, float v){ //TODO: Make more accurate (currently only accurate from 3-5in)

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-@Autonomous(name="USE THIS RED DEPOT AUTO")
+@Autonomous(name="LM3 Simple Red Depot")
 public class RedDepotAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     ColorSensor clrSnr;
@@ -68,24 +68,26 @@ public class RedDepotAuto extends OpMode {
         seq = new AutoLib.LinearSequence();
 
         //Align with the first stone
-        //Servo up
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(29), false));
+        seq.add(new AutoLib.ServoStep(serv, 0f));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(36), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(4), false));
 
-        //Start testing loop
-        while(isStone(hsv[0], hsv[1], hsv[2]) && dstSnr.getDistance(DistanceUnit.INCH) < 10){
-            telemetry.addData("That's a stone m8", "");
-            seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(4), false));
-            i++;
-        }
-        //swerve left 7"
-        //servo down / intake grab
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-4*i), false));
+        //Grab the first stone and bring it across
+        seq.add(new AutoLib.ServoStep(serv, 1));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-4), false));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-36), false));
-        //servo up / intake ungrab
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), false));
 
+        //Deposit it and go back to pick up the second one
+        seq.add(new AutoLib.ServoStep(serv, 0));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(40), false));
+        seq.add(new AutoLib.ServoStep(serv, 1));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-4), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-40), false));
+
+        //Drop off the second one and park on the tape
+        seq.add(new AutoLib.ServoStep(serv, 0));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), true));
     }
     @Override
     public void start(){
@@ -100,7 +102,7 @@ public class RedDepotAuto extends OpMode {
             telemetry.addData("Sequence finished", "");
         }
     }
-    public boolean isStone(float h, float s, float v){ //TODO: Make more accurate (currently only accurate from 3-5in)
+    public boolean isStone(float h, float s, float v){ //THIS SHIT BE DEPRECATED
         float stone[] = new float[3];
         stone[0] = 35; //h
         stone[1] = 0.78f; //s
