@@ -26,6 +26,9 @@ public class RedDepotAuto extends OpMode {
     float hsv[];
 
     boolean done;
+    public RedDepotAuto(){
+        this.msStuckDetectInit = 10000;
+    }
 
     public int travDist(float in){
         double c = 560/(4*(Math.PI));

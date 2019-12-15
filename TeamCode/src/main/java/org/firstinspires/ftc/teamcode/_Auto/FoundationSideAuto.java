@@ -32,7 +32,7 @@ public class FoundationSideAuto extends OpMode {
         float uniPow = 0.33f;
         seq = new AutoLib.LinearSequence();
 
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));
 

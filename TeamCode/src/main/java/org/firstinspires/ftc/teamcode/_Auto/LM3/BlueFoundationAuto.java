@@ -25,6 +25,10 @@ public class BlueFoundationAuto extends OpMode {
     boolean done;
     float uniPow = 0.33f;
 
+    public BlueFoundationAuto(){
+        this.msStuckDetectInit = 10000;
+    }
+
     public int travDist(float in){
         double c = 560/(4*(Math.PI));
         int out = (int) Math.round(c*in);
@@ -62,8 +66,8 @@ public class BlueFoundationAuto extends OpMode {
         seq = new AutoLib.LinearSequence();
 
         //Move to foundation
-        seq.add(new AutoLib.ServoStep(lfServ, 1));
-        seq.add(new AutoLib.ServoStep(rfServ,0));
+        seq.add(new AutoLib.ServoStep(lfServ, 0)); //TODO: Test to see that this actually goes up
+        seq.add(new AutoLib.ServoStep(rfServ,1));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
@@ -73,16 +77,20 @@ public class BlueFoundationAuto extends OpMode {
         seq.add(new AutoLib.ServoStep(lfServ, 0));
         seq.add(new AutoLib.ServoStep(rfServ,1 ));
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1.5, false)); //wait for a bit
-        //Pull foundation back
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-24), false));
-        //Raise Servos
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), false));
         seq.add(new AutoLib.ServoStep(lfServ, 1));
         seq.add(new AutoLib.ServoStep(rfServ,0));
+        //wait & pull foundation back
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 2, false)); //wait for a bit
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-24), false));
+        //Raise Servos
+        seq.add(new AutoLib.ServoStep(lfServ, 0));
+        seq.add(new AutoLib.ServoStep(rfServ,1));
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1.5, false)); //wait for a bit
 
         //Go back to tape (close to wall)
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(50), true));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(55), true));
     }
 
     @Override
