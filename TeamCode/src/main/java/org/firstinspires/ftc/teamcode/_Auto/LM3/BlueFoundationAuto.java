@@ -23,7 +23,7 @@ public class BlueFoundationAuto extends OpMode {
     DcMotor motors[];
     AutoLib.Sequence seq;
     boolean done;
-    float uniPow = 0.33f;
+    float uniPow = 0.66f;
 
     public BlueFoundationAuto(){
         this.msStuckDetectInit = 10000;
@@ -66,31 +66,35 @@ public class BlueFoundationAuto extends OpMode {
         seq = new AutoLib.LinearSequence();
 
         //Move to foundation
-        seq.add(new AutoLib.ServoStep(lfServ, 0)); //TODO: Test to see that this actually goes up
+        seq.add(new AutoLib.ServoStep(lfServ, 0)); //Moves servos up
         seq.add(new AutoLib.ServoStep(rfServ,1));
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false)); //drive forward 2ft
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false));//turns left 90*
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false)); //drives forward 2ft
+        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right 90*
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false)); //moves forward 2in
         //Lower Servos
         seq.add(new AutoLib.ServoStep(lfServ, 0));
         seq.add(new AutoLib.ServoStep(rfServ,1 ));
+
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1.5, false)); //wait for a bit
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), false));
-        seq.add(new AutoLib.ServoStep(lfServ, 1));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), true));
+        seq.add(new AutoLib.ServoStep(lfServ, 1)); //servos down? TODO: is this down?
         seq.add(new AutoLib.ServoStep(rfServ,0));
         //wait & pull foundation back
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 2, false)); //wait for a bit
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-24), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(-30), false)); //reverses 48in
         //Raise Servos
         seq.add(new AutoLib.ServoStep(lfServ, 0));
         seq.add(new AutoLib.ServoStep(rfServ,1));
         seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1.5, false)); //wait for a bit
 
         //Go back to tape (close to wall)
-        seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(55), true));
+        seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, -90f, uniPow, 3.5f, true)); //should strafe todo fixnums
+        /*seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false));//turns right 90*
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(55), false));
+
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1,true)); //if this fixes it ima die*/
     }
 
     @Override
