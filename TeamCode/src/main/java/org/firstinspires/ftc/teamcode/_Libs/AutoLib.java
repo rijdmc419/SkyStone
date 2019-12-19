@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode._Libs;
 
-//import android.support.annotation.ColorInt;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,10 +12,11 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.Range;
 
+
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -175,6 +173,71 @@ public class AutoLib {
             mElse.reset();
         }
     }
+
+    // a Step that implements an n-way switch construct --
+    // you derive your Step from this one and override the caseTest() function to implement your switch logic.
+    static public class SwitchStep extends Step {
+        Step[] mCases;
+        boolean mOnce;
+        int mCase;
+
+        public SwitchStep() {}
+
+        public SwitchStep(Step[] cases, boolean once) {
+            mCases = cases;
+            mOnce = once;
+            mCase = -1;     // undefined
+        }
+
+        // if "once" is true, we run this code only until it returns a non-negative case and remember the result thereafter.
+        // otherwise, this code is run every time through the loop.
+        int caseTest() {
+            return -1;      // undefined
+        }
+
+        public boolean loop() {
+            // evaluate the case to run -- either once (until we get a valid result) or every time
+            if (mOnce & mCase<0 || !mOnce)
+                mCase = caseTest();
+
+            // run the indicated case iff we have a valid case value and return its result, else return false (not done)
+            return mCase>=0 ? mCases[mCase].loop() : false;
+        }
+
+        public void reset() {
+            super.reset();
+            for (Step s : mCases )
+                s.reset();
+            mCase = -1;     // undefined
+        }
+    }
+
+    static public interface ReturnInteger {
+        public void setInteger(int value);
+    }
+
+    static public class SwitchStep2 extends SwitchStep implements ReturnInteger {
+        Step mCaseStep;     // the Step that sets the case to run
+
+        public SwitchStep2(Step caseStep, Step[] cases, boolean once) {
+            super(cases, once);
+            mCaseStep = caseStep;
+        }
+
+        // callback from caseStep to return and set the case value
+        public void setInteger(int value) {
+            mCase = value;
+        }
+
+        // run caseStep.loop() and return the value it sent back to us via setInteger.
+        // until it does set a valid value, we will return -1 (undefined),
+        // which causes the base class loop() function to do nothing.
+        int caseTest() {
+            mCaseStep.loop();
+            return mCase;
+        }
+    }
+
 
     // a Step that implements a do-until construct --
     // repeat the "do" Step until the "until" Step returns done.
@@ -354,11 +417,11 @@ public class AutoLib {
 
     }
 
-    // a Step that runs a DcMotor at a given power, for a given encoder count
+    // a Step that runs a DcMotor at a given power, for a given encoder count relative to start of this Step
     static public class EncoderMotorStep extends Step implements SetPower {
         DcMotor mMotor;    // motor to control
         double mPower;          // power level to use
-        int mEncoderCount;      // target encoder count
+        int mEncoderCount;      // incremental target encoder count
         boolean mStop;          // stop motor when count is reached
 
         public EncoderMotorStep(DcMotor motor, double power, int count, boolean stop) {
@@ -373,8 +436,6 @@ public class AutoLib {
             mPower = power;
         }
 
-        public void setPosition(int position) { mEncoderCount = position; }
-
         public boolean loop() {
             super.loop();
 
@@ -383,8 +444,8 @@ public class AutoLib {
             // we need a little state machine to make the encoders happy
             if (firstLoopCall()) {
                 // set up the motor on our first call
-                mMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 mMotor.setTargetPosition(mMotor.getCurrentPosition() + mEncoderCount);  // count is RELATIVE to NOW
+                mMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 mMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 mMotor.setPower(mPower);
             }
@@ -455,13 +516,6 @@ public class AutoLib {
 
     }
 
-    static public class gyroReset extends Step {
-
-        public gyroReset(BNO055IMUHeadingSensor mGyro) {
-            mGyro.init(4);
-        }
-    }
-
 
     // some utility functions
 
@@ -524,6 +578,7 @@ public class AutoLib {
         return (m > af) ? af/m : 1.0;
     }
     static public double normalize(double[] a) { return normalize(1.0, a); }
+
 
     // some Steps that use various sensor input to control other Steps
 
@@ -614,7 +669,8 @@ public class AutoLib {
             float heading = mGyro.getHeading();     // get latest reading from direction sensor
             // convention is positive angles CCW, wrapping from 359-0
 
-            float error = SensorLib.Utils.wrapAngle(heading-mDirection);   // deviation from desired heading
+            float backwards = (mPower < 0) ? 180 : 0;       // if we're going backwards, reverse the gyro reading
+            float error = SensorLib.Utils.wrapAngle(heading + backwards - mDirection);   // deviation from desired heading
             // deviations to left are positive, to right are negative
 
             // compute delta time since last call -- used for integration time of PID step
@@ -644,6 +700,9 @@ public class AutoLib {
             // log some data
             if (mOpMode != null) {
                 mOpMode.telemetry.addData("heading ", heading);
+                mOpMode.telemetry.addData("error ", error);
+                mOpMode.telemetry.addData("correction ", correction);
+                mOpMode.telemetry.addData("mPower ", mPower);
                 mOpMode.telemetry.addData("left power ", leftPower);
                 mOpMode.telemetry.addData("right power ", rightPower);
             }
@@ -900,106 +959,6 @@ public class AutoLib {
 
     }
 
-
-
-        public SquirrelyGyroGuideStep(OpMode mode, float direction, float heading, HeadingSensor gyro, SensorLib.PID pid,
-                                      ArrayList<AutoLib.SetPower> motorsteps, float power) {
-            mOpMode = mode;
-            mDirection = direction;
-            mHeading = heading;
-            mGyro = gyro;
-            if (pid != null)
-                mPid = pid;     // client is supplying PID controller for correcting heading errors
-            else {
-                // construct a default PID controller for correcting heading errors
-                final float Kp = 0.05f;        // degree heading proportional term correction per degree of deviation
-                final float Ki = 0.02f;        // ... integrator term
-                final float Kd = 0.0f;         // ... derivative term
-                final float KiCutoff = 3.0f;   // maximum angle error for which we update integrator
-                mPid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
-            }
-            mMotorSteps = motorsteps;
-            mPower = mMaxPower = power;
-        }
-
-        // set max allowed power including direction correction ---
-        // e.g. to turn in place slowly, set power=0 and maxPower<1.0
-        public void setMaxPower(float mp) {
-            mMaxPower = mp;
-        }
-
-        // set motor control steps this step should control (assumes ctor called with null argument)
-        public void set(ArrayList<AutoLib.SetPower> motorsteps)
-        {
-            mMotorSteps = motorsteps;
-        }
-
-        // update target direction, heading, and power --
-        // used by interactive teleop modes to redirect the step from controller input
-        // and by e.g. camera based guide steps to steer the robot to a target
-        public void setDirection(float direction) { mDirection = direction; }
-        public void setRelativeDirection(float direction) { mDirection = mGyro.getHeading() + direction; }
-        public void setHeading(float heading) { mHeading = heading; }
-        public void setPower(float power) { mPower = power; }
-
-        public boolean loop()
-        {
-            super.loop();
-
-            // initialize previous-time on our first call -> dt will be zero on first call
-            if (firstLoopCall()) {
-                mPrevTime = mOpMode.getRuntime();           // use timer provided by OpMode
-            }
-
-            final float heading = mGyro.getHeading();     // get latest reading from direction sensor
-            // convention is positive angles CCW, wrapping from 359-0
-
-            final float error = SensorLib.Utils.wrapAngle(heading - mHeading);   // deviation from desired heading
-            // deviations to left are positive, to right are negative
-
-            // compute delta time since last call -- used for integration time of PID step
-            final double time = mOpMode.getRuntime();
-            final double dt = time - mPrevTime;
-            mPrevTime = time;
-
-            // feed error through PID to get motor power value for heading correction
-            float hdCorr = mPid.loop(error, (float) dt);
-
-            // relative direction we want to move is difference between requested absolute direction and CURRENT orientation
-            float relDir = SensorLib.Utils.wrapAngle(mDirection - heading);
-
-            // calculate relative front/back motor powers for fancy wheels to move us in requested relative direction
-            AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(relDir);
-
-            // calculate powers of the 4 motors
-            double pFR = mp.Front() * mPower - hdCorr;
-            double pBR = mp.Back() * mPower - hdCorr;
-            double pFL = mp.Front() * mPower + hdCorr;
-            double pBL = mp.Back() * mPower + hdCorr;
-
-            // normalize powers so none has magnitude > maxPower
-            double norm = normalize(mMaxPower, pFR, pBR, pFL, pBL);
-            pFR *= norm;  pBR *= norm;  pFL *= norm;  pBL *= norm;
-
-            // set the powers
-            mMotorSteps.get(0).setPower(pFR);   // fr
-            mMotorSteps.get(1).setPower(pBR);   // br
-            mMotorSteps.get(2).setPower(pFL);   // fl
-            mMotorSteps.get(3).setPower(pBL);   // bl
-
-            // log some data
-            if (mOpMode != null) {
-                mOpMode.telemetry.addData("heading ", heading);
-                mOpMode.telemetry.addData("front power ", mp.Front());
-                mOpMode.telemetry.addData("back power ", mp.Back());
-            }
-
-            // guidance step always returns "done" so the CS in which it is embedded completes when
-            // all the motors it's controlling are done
-            return true;
-        }
-
-    }
 
 
     // some Steps that combine various motor driving Steps with guide Steps that control them
@@ -1652,14 +1611,6 @@ public class AutoLib {
                 this.add(new TimedMotorStep(bl, power, seconds, stop));
         }
 
-        public MoveByTimeStep(DcMotor fr, DcMotor fl, double power, double seconds, boolean stop)
-        {
-            if (fr != null)
-                this.add(new TimedMotorStep(fr, power, seconds, stop));
-            if (fl != null)
-                this.add(new TimedMotorStep(fl, power, seconds, stop));
-        }
-
         public MoveByTimeStep(DcMotor motors[], double power, double seconds, boolean stop)
         {
             for (DcMotor em : motors)
@@ -1703,14 +1654,6 @@ public class AutoLib {
                 this.add(new EncoderMotorStep(bl, power, count, stop));
         }
 
-        public MoveByEncoderStep(DcMotor fr, DcMotor br, double power, int count, boolean stop)
-        {
-            if (fr != null)
-                this.add(new EncoderMotorStep(fr, power, count, stop));
-            if (br != null)
-                this.add(new EncoderMotorStep(br, power, count, stop));
-        }
-
         public MoveByEncoderStep(DcMotor motors[], double power, int count, boolean stop)
         {
             for (DcMotor em : motors)
@@ -1720,82 +1663,22 @@ public class AutoLib {
 
     }
 
-    static public class MoveByEncoderStepTimed extends ConcurrentSequence {
-
-        AutoLib.Timer mTimer = new AutoLib.Timer(1.5f);
-
-        public MoveByEncoderStepTimed(DcMotor fr, DcMotor br, DcMotor fl, DcMotor bl, double power, int count, boolean stop)
-        {
-            if (fr != null)
-                this.add(new EncoderMotorStep(fr, power, count, stop));
-            if (br != null)
-                this.add(new EncoderMotorStep(br, power, count, stop));
-            if (fl != null)
-                this.add(new EncoderMotorStep(fl, power, count, stop));
-            if (bl != null)
-                this.add(new EncoderMotorStep(bl, power, count, stop));
-        }
-
-        public MoveByEncoderStepTimed(DcMotor fr, DcMotor br, double power, int count, boolean stop)
-        {
-            if (fr != null)
-                this.add(new EncoderMotorStep(fr, power, count, stop));
-            if (br != null)
-                this.add(new EncoderMotorStep(br, power, count, stop));
-        }
-
-        public MoveByEncoderStepTimed(DcMotor motors[], double power, int count, boolean stop)
-        {
-            for (DcMotor em : motors)
-                if (em != null)
-                    this.add(new EncoderMotorStep(em, power, count, stop));
-        }
-
-        public boolean loop() {
-            super.loop();
-
-            if (firstLoopCall()) {
-                mTimer.start();
-            }
-
-            if(mTimer.done()) {
-                return true;
-            }
-            return false;
-        }
-
-    }
-
 
     // a Sequence that turns an up-to-four-motor robot by applying the given right and left powers for given right and left encoder counts
     static public class TurnByEncoderStep extends ConcurrentSequence {
-        EncoderMotorStep steps[];
+
         public TurnByEncoderStep(DcMotor fr, DcMotor br, DcMotor fl, DcMotor bl, double rightPower, double leftPower, int rightCount, int leftCount, boolean stop)
         {
-            steps = new EncoderMotorStep[4];
             if (fr != null)
-                this.add(steps[0] = new EncoderMotorStep(fr, rightPower, rightCount, stop));
+                this.add(new EncoderMotorStep(fr, rightPower, rightCount, stop));
             if (br != null)
-                this.add(steps[1] = new EncoderMotorStep(br, rightPower, rightCount, stop));
+                this.add(new EncoderMotorStep(br, rightPower, rightCount, stop));
             if (fl != null)
-                this.add(steps[2] = new EncoderMotorStep(fl, leftPower, leftCount, stop));
+                this.add(new EncoderMotorStep(fl, leftPower, leftCount, stop));
             if (bl != null)
-                this.add(steps[3] = new EncoderMotorStep(bl, leftPower, leftCount, stop));
+                this.add(new EncoderMotorStep(bl, leftPower, leftCount, stop));
         }
 
-        public void set(double rightPower, double leftPower, int rightCount, int leftCount) {
-            steps[0].setPower(rightPower);
-            steps[0].setPosition(rightCount);
-
-            steps[1].setPower(rightPower);
-            steps[1].setPosition(rightCount);
-
-            steps[2].setPower(leftPower);
-            steps[2].setPosition(leftCount);
-
-            steps[3].setPower(leftPower);
-            steps[3].setPosition(leftCount);
-        }
     }
 
 
@@ -1903,7 +1786,7 @@ public class AutoLib {
     }
 
 
-    // some Steps that use camera-based input
+    // some Steps that use Vuforia camera-based input
 
     // a Step that provides Vuforia-based guidance to motors controlled by other concurrent Steps (e.g. encoder or time-based)
     // assumes an even number of concurrent drive motor steps assuming order fr, br, fl, bl driving Squirrely Wheels
@@ -2227,403 +2110,6 @@ public class AutoLib {
     }
 
 
-    // test hardware classes -- useful for testing when no hardware is available.
-    // these are primarily intended for use in testing autonomous mode code, but could
-    // also be useful for testing tele-operator modes.
-
-    static public class TestHardware implements HardwareDevice {
-        public HardwareDevice.Manufacturer getManufacturer() { return Manufacturer.Unknown; }
-        public String getDeviceName() { return "AutoLib_TestHardware"; }
-        public String getConnectionInfo() { return "connection info unknown"; }
-        public int getVersion() { return 0; }
-        public void resetDeviceConfigurationForOpMode() {}
-        public void close() {}
-    }
-
-    // a dummy DcMotor that just logs commands we send to it --
-    // useful for testing Motor code when you don't have real hardware handy
-    static public class TestMotor extends TestHardware implements DcMotor {
-        OpMode mOpMode;     // needed for logging data
-        String mName;       // string id of this motor
-        double mPower;      // current power setting
-        DcMotor.RunMode mMode;
-        int mTargetPosition;
-        int mCurrentPosition;
-        boolean mPowerFloat;
-        Direction mDirection;
-        ZeroPowerBehavior mZeroPowerBehavior;
-        int mMaxSpeed;
-        MotorConfigurationType mMotorType;
-
-        public TestMotor(String name, OpMode opMode) {
-            super();     // init base class (real DcMotor) with dummy data
-            mOpMode = opMode;
-            mName = name;
-            mPower = 0.0;
-            mMaxSpeed = 0;
-            mMode = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
-            mTargetPosition = 0;
-            mCurrentPosition = 0;
-            mPowerFloat = false;
-            mDirection = Direction.FORWARD;
-            mZeroPowerBehavior = ZeroPowerBehavior.FLOAT;
-        }
-
-        @Override       // override all the functions of the real DcMotor class that touch hardware
-        public void setPower(double power) {
-            mPower = power;
-            mOpMode.telemetry.addData(mName, " power: " + String.valueOf(mPower));
-        }
-
-        public double getPower() {
-            return mPower;
-        }
-
-        public void close() {
-            mOpMode.telemetry.addData(mName, " close();");
-        }
-
-        public boolean isBusy() {
-            return false;
-        }
-
-        public void setPowerFloat() {
-            mPowerFloat = true;
-            mOpMode.telemetry.addData(mName, " setPowerFloat();");
-        }
-
-        public boolean getPowerFloat() {
-            return mPowerFloat;
-        }
-
-        public void setMaxSpeed(int encoderTicksPerSecond)
-        {
-            mMaxSpeed = encoderTicksPerSecond;
-            mOpMode.telemetry.addData(mName, "maxSpeed: " + String.valueOf(encoderTicksPerSecond));
-        }
-
-        public int getMaxSpeed() { return mMaxSpeed; }
-
-        public void setTargetPosition(int position) {
-            mTargetPosition = position;
-            mOpMode.telemetry.addData(mName, "target: " + String.valueOf(position));
-        }
-        public int getTargetPosition() {
-            return mTargetPosition;
-        }
-
-        public int getCurrentPosition() {
-            return mTargetPosition;
-        }
-
-        public void setMode(DcMotor.RunMode mode) {
-            this.mMode = mode;
-            mOpMode.telemetry.addData(mName, "run mode: " + String.valueOf(mode));
-        }
-
-        public DcMotor.RunMode getMode() {
-            return this.mMode;
-        }
-
-        public void setDirection(Direction direction)
-        {
-            mDirection = direction;
-            mOpMode.telemetry.addData(mName, "direction: " + String.valueOf(direction));
-        }
-
-        public Direction getDirection() { return mDirection; }
-
-        public String getConnectionInfo() {
-            return mName + " port: unknown";
-        }
-
-        public DcMotorController getController()
-        {
-            return null;
-        }
-
-        public void resetDeviceConfigurationForOpMode() {
-            mOpMode.telemetry.addData(mName, "resetDeviceConfigurationForOpMode: ");
-        }
-
-        public int getPortNumber()
-        {
-            return 0;
-        }
-
-        public ZeroPowerBehavior getZeroPowerBehavior()
-        {
-            return mZeroPowerBehavior;
-        }
-
-        public void setZeroPowerBehavior(ZeroPowerBehavior zeroPowerBehavior)
-        {
-            mZeroPowerBehavior = zeroPowerBehavior;
-            mOpMode.telemetry.addData(mName, "zeroPowerBehavior: " + String.valueOf(zeroPowerBehavior));
-        }
-
-        public String getDeviceName() { return "AutoLib_TestMotor: " + mName; }
-
-        public void setMotorType(MotorConfigurationType motorType) { mMotorType = motorType; }
-
-        public MotorConfigurationType getMotorType() { return mMotorType; }
-
-    }
-
-    // a dummy Servo that just logs commands we send to it --
-    // useful for testing Servo code when you don't have real hardware handy
-    static public class TestServo extends TestHardware implements Servo {
-        OpMode mOpMode;     // needed for logging data
-        String mName;       // string id of this servo
-        double mPosition;   // current target position
-        Direction mDirection;
-        double mScaleMin;
-        double mScaleMax;
-
-        public TestServo(String name, OpMode opMode) {
-            super();     // init base class (real DcMotor) with dummy data
-            mOpMode = opMode;
-            mName = name;
-            mPosition = 0.0;
-        }
-
-        @Override       // this function overrides the setPower() function of the real DcMotor class
-        public void setPosition(double position) {
-            mPosition = position;
-            mOpMode.telemetry.addData(mName, " position: " + String.valueOf(mPosition));
-            mDirection = Direction.FORWARD;
-        }
-
-        @Override       // this function overrides the getPower() function of the real DcMotor class
-        public double getPosition() {
-            return mPosition;
-        }
-
-        @Override       // override all other functions of Servo that touch the hardware
-        public String getConnectionInfo() {
-            return mName + " port: unknown";
-        }
-
-        public HardwareDevice.Manufacturer getManufacturer() { return Manufacturer.Unknown; }
-
-        public void resetDeviceConfigurationForOpMode() {
-            mOpMode.telemetry.addData(mName, "resetDeviceConfigurationForOpMode: ");
-        }
-
-        public Servo.Direction getDirection() { return mDirection; }
-        public void setDirection(Servo.Direction direction) {
-            mDirection = direction;
-            mOpMode.telemetry.addData(mName, "direction: " + String.valueOf(mDirection));
-        }
-
-        public void scaleRange(double min, double max)
-        {
-            mScaleMin = min;
-            mScaleMax = max;
-        }
-
-        public ServoController getController() { return null; }
-        public String getDeviceName() { return "AutoLib_TestServo: " + mName; }
-        public int getPortNumber()
-        {
-            return 0;
-        }
-        public int getVersion() { return 0; }
-
-        public void close() {}
-
-    }
-
-    // a dummy Gyro that just returns default info --
-    // useful for testing Gyro code when you don't have real hardware handy
-    static public class TestGyro extends TestHardware implements GyroSensor {
-        OpMode mOpMode;     // needed for logging data
-        String mName;       // string id of this gyro
-
-        public TestGyro(String name, OpMode opMode) {
-            super();
-            mOpMode = opMode;
-            mName = name;
-        }
-
-        public void calibrate() {}
-        public boolean isCalibrating() { return false; }
-        public int getHeading() { return 0; }
-        public double getRotationFraction() { return 0; }
-        public int rawX() { return 0; }
-        public int rawY() { return 0; }
-        public int rawZ() { return 0; }
-        public void resetZAxisIntegrator() {}
-        public String status() { return "Status okay"; }
-        public String getDeviceName() { return "AutoLib_TestGyro: " + mName; }
-
-    }
-
-    // a dummy ColorSensor that just returns default info --
-    // useful for testing ColorSensor code when you don't have real hardware handy
-    static public class TestColorSensor extends TestHardware implements ColorSensor {
-        OpMode mOpMode;     // needed for logging data
-        String mName;       // string id of this gyro
-
-        public TestColorSensor(String name, OpMode opMode) {
-            super();
-            mOpMode = opMode;
-            mName = name;
-        }
-
-        /**
-         * Get the Red values detected by the sensor as an int.
-         * @return reading, unscaled.
-         */
-        public int red() { return 0; }
-
-        /**
-         * Get the Green values detected by the sensor as an int.
-         * @return reading, unscaled.
-         */
-        public int green() { return 0; }
-
-        /**
-         * Get the Blue values detected by the sensor as an int.
-         * @return reading, unscaled.
-         */
-        public int blue() { return 255; }
-
-        /**
-         * Get the amount of light detected by the sensor as an int.
-         * @return reading, unscaled.
-         */
-        public int alpha() { return 0; }
-
-        /**
-         * Get the "hue"
-         * @return hue
-         */
-        //@ColorInt
-        public int argb() { return 0; }
-
-        /**
-         * Enable the LED light
-         * @param enable true to enable; false to disable
-         */
-        public void enableLed(boolean enable) {}
-
-        /**
-         * Set the I2C address to a new value.
-         *
-         */
-        public void setI2cAddress(I2cAddr newAddress) {}
-
-        /**
-         * Get the current I2C Address of this object.
-         * Not necessarily the same as the I2C address of the actual device.
-         *
-         * Return the current I2C address.
-         * @return current I2C address
-         */
-        public I2cAddr getI2cAddress() {return I2cAddr.zero();}
-
-        public String status() { return "Status okay"; }
-        public String getDeviceName() { return "AutoLib_TestGyro: " + mName; }
-
-    }
-
-    // define interface to Factory that creates various kinds of hardware objects
-    static public interface HardwareFactory {
-        public DcMotor getDcMotor(String name);
-        public Servo getServo(String name);
-        public GyroSensor getGyro(String name);
-        public ColorSensor getColorSensor(String name);
-    }
-
-    // this implementation generates test-hardware objects that just log data
-    static public class TestHardwareFactory implements HardwareFactory {
-        OpMode mOpMode;     // needed for logging data
-
-        public TestHardwareFactory(OpMode opMode) {
-            mOpMode = opMode;
-        }
-
-        public DcMotor getDcMotor(String name){
-            return new TestMotor(name, mOpMode);
-        }
-
-        public Servo getServo(String name){
-            return new TestServo(name, mOpMode);
-        }
-
-        public GyroSensor getGyro(String name){
-            return new TestGyro(name, mOpMode);
-        }
-
-        public ColorSensor getColorSensor(String name){
-            return new TestColorSensor(name, mOpMode);
-        }
-    }
-
-    // this implementation gets real hardware objects from the hardwareMap of the given OpMode
-    static public class RealHardwareFactory implements HardwareFactory {
-        OpMode mOpMode;     // needed for access to hardwareMap
-
-        public RealHardwareFactory(OpMode opMode) {
-            mOpMode = opMode;
-        }
-
-        public DcMotor getDcMotor(String name){
-            DcMotor motor = null;
-            try {
-                motor = mOpMode.hardwareMap.dcMotor.get(name);
-            }
-            catch (Exception e) {
-                // okay -- just return null (absent) for this motor
-            }
-
-            // just to make sure - a previous OpMode may have set it differently ...
-            if (motor != null)
-                motor.setDirection(DcMotor.Direction.FORWARD);
-
-            return motor;
-        }
-
-        public Servo getServo(String name){
-            Servo servo = null;
-            try {
-                servo = mOpMode.hardwareMap.servo.get(name);
-            }
-            catch (Exception e) {
-                // okay - just return null (absent) for this servo
-            }
-
-            // just to make sure - a previous OpMode may have set it differently ...
-            if (servo != null)
-                servo.setDirection(Servo.Direction.FORWARD);
-
-            return servo;
-        }
-
-        public GyroSensor getGyro(String name){
-            GyroSensor gyro = null;
-            try {
-                gyro = mOpMode.hardwareMap.gyroSensor.get(name);
-            }
-            catch (Exception e) {
-                // okay - just return null (absent) for this servo
-            }
-            return gyro;
-        }
-
-        public ColorSensor getColorSensor(String name){
-            ColorSensor cs = null;
-            try {
-                cs = mOpMode.hardwareMap.colorSensor.get(name);
-            }
-            catch (Exception e) {
-                // okay - just return null (absent) for this servo
-            }
-            return cs;
-        }
-
-    }
 
 }
 

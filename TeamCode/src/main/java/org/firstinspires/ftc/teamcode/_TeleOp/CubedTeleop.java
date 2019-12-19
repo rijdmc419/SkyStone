@@ -71,8 +71,8 @@ public class CubedTeleop extends OpMode{
         double heading = theta * 180.0/Math.PI;
 
         AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(heading);
-        double front = mp.Front();
-        double back = mp.Back();
+        double front = mp.RightFacing();
+        double back = mp.LeftFacing();
 
         double power = Math.sqrt(x*x + y*y);
         front *= power;

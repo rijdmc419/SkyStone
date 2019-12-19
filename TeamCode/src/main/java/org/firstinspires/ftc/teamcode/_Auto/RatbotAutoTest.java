@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode._Auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -8,6 +9,7 @@ import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 @Autonomous(name="Sksystone Ratbot Test")
+@Disabled
 public class RatbotAutoTest extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
 
@@ -20,8 +22,8 @@ public class RatbotAutoTest extends OpMode {
 
     @Override
     public void init(){
-        AutoLib.HardwareFactory mf = null;
-        mf = new AutoLib.RealHardwareFactory(this);
+        //AutoLib.HardwareFactory mf = null;
+        //mf = //new AutoLib.RealHardwareFactory(this);
         robot.init(hardwareMap);
 
         motors = new DcMotor[4];

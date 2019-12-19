@@ -267,7 +267,7 @@ public class PosIntDriveTestOp extends OpMode {
 
         // these position integrator steps use the encoder-based position integrator and IMU-gyro to move
         // the robot to a sequence of positions specified in absolute field coordinate system in inches
-        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        /*mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
         mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
@@ -292,7 +292,7 @@ public class PosIntDriveTestOp extends OpMode {
         // turn to heading zero to finish up
         mSequence.add(new AutoLib.AzimuthTolerancedTurnStep(this, 0, rh.mIMU, mPid, rh.mMotors, turnPower, tol, 10));
         mSequence.add(new AutoLib.MoveByTimeStep(rh.mMotors, 0, 0, true));     // stop all motors
-
+*/
         // start out not-done
         bDone = false;
     }

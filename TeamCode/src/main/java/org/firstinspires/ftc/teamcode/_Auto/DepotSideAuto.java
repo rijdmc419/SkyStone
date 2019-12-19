@@ -19,6 +19,7 @@ public class DepotSideAuto extends OpMode {
     AutoLib.Sequence seq;
     AutoLib.Sequence foundSeq;
     boolean done;
+    float uniPow =0.33f;
 
 
     @Override
