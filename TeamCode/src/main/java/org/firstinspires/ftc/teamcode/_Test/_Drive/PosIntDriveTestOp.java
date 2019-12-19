@@ -219,7 +219,7 @@ public class PosIntDriveTestOp extends OpMode {
     boolean bDone;                          // true when the programmed sequence is done
     boolean bSetup;                         // true when we're in "setup mode" where joysticks tweak parameters
     SensorLib.PID mPid;                     // PID controller for the sequence
-    EncoderGyroPosInt mPosInt;              // Encoder/gyro-based position integrator to keep track of where we are
+    SensorLib.EncoderGyroPosInt mPosInt;    // Encoder/gyro-based position integrator to keep track of where we are
     SensorLib.PIDAdjuster mPidAdjuster;     // for interactive adjustment of PID parameters
     RobotHardware rh;                       // standard hardware set for these tests
 
@@ -246,17 +246,11 @@ public class PosIntDriveTestOp extends OpMode {
         // create a PID adjuster for interactive tweaking (see loop() below)
         mPidAdjuster = new SensorLib.PIDAdjuster(this, mPid, gamepad1);
 
-        // on Ratbot, only two motor encoders are hooked up: [1]br, [2]fl
-        DcMotor[] encoderMotors = new DcMotor[4];
-        encoderMotors[0] = encoderMotors[1] = rh.mMotors[1];
-        encoderMotors[2] = encoderMotors[3] = rh.mMotors[2];
-
         // create Encoder/gyro-based PositionIntegrator to keep track of where we are on the field
         int countsPerRev = 28*20;		// for 20:1 gearbox motor @ 28 counts/motorRev
         double wheelDiam = 4.0;		    // wheel diameter (in)
-        Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0);
-        // example starting position: at origin of field
-        mPosInt = new EncoderGyroPosInt(this, rh.mIMU, encoderMotors, countsPerRev, wheelDiam, initialPosn);
+        Position initialPosn = new Position(DistanceUnit.INCH, 0.0, 0.0, 0.0, 0); // example starting position: at origin of field
+        mPosInt = new SensorLib.EncoderGyroPosInt(this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
 
         // create an autonomous sequence with the steps to drive
@@ -267,32 +261,33 @@ public class PosIntDriveTestOp extends OpMode {
         // create the root Sequence for this autonomous OpMode
         mSequence = new AutoLib.LinearSequence();
 
-        // add a bunch of timed "legs" to the sequence - use Gyro heading convention of positive degrees CW from initial heading
+        // add a bunch of movements to the sequence
         float tol = 1.0f;   // tolerance in inches
         float timeout = 2.0f;   // seconds
 
-        // add a bunch of position integrator "legs" to the sequence -- uses absolute field coordinate system in inches
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        // these position integrator steps use the encoder-based position integrator and IMU-gyro to move
+        // the robot to a sequence of positions specified in absolute field coordinate system in inches
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,                   // do this move backwards!
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        //mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-        //        new Position(DistanceUnit.INCH, -48, -48, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, true));
 
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+        mSequence.add((new AutoLib.LogTimeStep(this, "stopped!", 5)));
+
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
                 new Position(DistanceUnit.INCH, 0, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 36, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
                 new Position(DistanceUnit.INCH, 36, 0, 0., 0), tol, false));
-        //mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, -movePower, mPid,                   // do this move backwards!
-        //        new Position(DistanceUnit.INCH, -48, -48, 0., 0), tol, false));
-        mSequence.add(new PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
-                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, false));
+        mSequence.add(new AutoLib.PosIntDriveToStep(this, mPosInt, rh.mMotors, movePower, mPid,
+                new Position(DistanceUnit.INCH, 0, 0, 0., 0), tol, true));
+
+        mSequence.add((new AutoLib.LogTimeStep(this, "stopped!", 5)));
 
         // turn to heading zero to finish up
         mSequence.add(new AutoLib.AzimuthTolerancedTurnStep(this, 0, rh.mIMU, mPid, rh.mMotors, turnPower, tol, 10));
@@ -321,7 +316,6 @@ public class PosIntDriveTestOp extends OpMode {
     }
 
     public void stop() {
-        super.stop();
     }
 }
 

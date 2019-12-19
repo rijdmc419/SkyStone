@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
+import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
 
 /**
@@ -38,11 +39,11 @@ public class AutoMotorTest1 extends OpMode {
 
     public void init() {
 
-        AutoLib.HardwareFactory mf = null;
+        TestHardware.HardwareFactory mf = null;
         if (debug)
-            mf = new AutoLib.TestHardwareFactory(this);
+            mf = new TestHardware.TestHardwareFactory(this);
         else
-            mf = new AutoLib.RealHardwareFactory(this);
+            mf = new TestHardware.RealHardwareFactory(this);
 
         // get the motors: depending on the factory we created above, these may be
         // either dummy motors that just log data or real ones that drive the hardware
