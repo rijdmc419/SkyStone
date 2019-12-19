@@ -23,6 +23,10 @@ import java.util.ArrayList;
 //@Disabled
 public class PosIntDriveTestOp extends OpMode {
 
+    public PosIntDriveTestOp(){
+        this.msStuckDetectInit = 10000;
+    }
+
     // use a single motor encoder and gyro to track absolute field position
     class EncoderGyroPosInt extends SensorLib.PositionIntegrator {
         OpMode mOpMode;
