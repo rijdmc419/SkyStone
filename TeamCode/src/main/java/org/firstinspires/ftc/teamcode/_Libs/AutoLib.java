@@ -21,7 +21,14 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by phanau on 12/14/15.
+ *
+ * IMPORTANT
+ * Line 1701 name change to Front() from RightFacting()
+ * Lines 1303 1304 1787 1789 1868 Need to use .Front() instead of .RightFacing()
+ * Line 1702 name change to Back() from LeftFacing()
+ * Lines 1302 1305 1785 1791 1869 use .Back() instead of .LeftFacing()
  */
+
 
 // a library of classes that support autonomous opmode programming
 public class AutoLib {
@@ -1292,10 +1299,10 @@ public class AutoLib {
 
             // calculate powers of the 4 motors ---
             // for "standard" mecanum wheel arrangement (i.e. all roller axles pointing to bot center)
-            double pFR = mp.LeftFacing() * mPower - hdCorr;
-            double pBR = mp.RightFacing() * mPower - hdCorr;
-            double pFL = mp.RightFacing() * mPower + hdCorr;
-            double pBL = mp.LeftFacing() * mPower + hdCorr;
+            double pFR = mp.Back() * mPower - hdCorr;
+            double pBR = mp.Front() * mPower - hdCorr;
+            double pFL = mp.Front() * mPower + hdCorr;
+            double pBL = mp.Back() * mPower + hdCorr;
 
             // normalize powers so none has magnitude > maxPower
             double norm = normalize(mMaxPower, pFR, pBR, pFL, pBL);
@@ -1694,8 +1701,8 @@ public class AutoLib {
             mFront = front;
             mBack = back;
         }
-        public double RightFacing() { return mFront; }
-        public double LeftFacing() { return mBack; }
+        public double Front() { return mFront; }
+        public double Back() { return mBack; }
     }
 
     // this function computes the relative front/back power settings needed to move along a given
@@ -1775,13 +1782,13 @@ public class AutoLib {
 
             // create TimedMotorSteps to control the 4 motors
             if (fr != null)
-                this.add(new TimedMotorStep(fr, mp.LeftFacing()*power, seconds, stop));
+                this.add(new TimedMotorStep(fr, mp.Back()*power, seconds, stop));
             if (br != null)
-                this.add(new TimedMotorStep(br, mp.RightFacing()*power, seconds, stop));
+                this.add(new TimedMotorStep(br, mp.Front()*power, seconds, stop));
             if (fl != null)
-                this.add(new TimedMotorStep(fl, mp.RightFacing()*power, seconds, stop));
+                this.add(new TimedMotorStep(fl, mp.Front()*power, seconds, stop));
             if (bl != null)
-                this.add(new TimedMotorStep(bl, mp.LeftFacing()*power, seconds, stop));
+                this.add(new TimedMotorStep(bl, mp.Back()*power, seconds, stop));
         }
     }
 
@@ -1858,8 +1865,8 @@ public class AutoLib {
 
             // compute motor powers needed to go in that direction
             MotorPowers mp = GetSquirrelyWheelMotorPowers(robotHeading);
-            double rightFacingPower = mp.RightFacing() * mPower;
-            double leftFacingPower = mp.LeftFacing() * mPower;
+            double rightFacingPower = mp.Front() * mPower;
+            double leftFacingPower = mp.Back() * mPower;
 
             // reduce motor powers when we're very close to the target position
             final double slowDist = 3.0*mError;   // start slowing down when we're this close

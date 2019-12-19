@@ -29,7 +29,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-package org.firstinspires.ftc.teamcode._TeleOp;
+package org.firstinspires.ftc.teamcode._Test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -109,8 +109,8 @@ public class SquirrelyDrive1 extends OpMode {
 
 		// compute left-side front and back wheel relative speeds needed to go in desired direction
 		AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(heading);
-		double rightFacing = mp.RightFacing();
-		double leftFacing = mp.LeftFacing();
+		double rightFacing = mp.Front();
+		double leftFacing = mp.Back();
 
 		// power is the magnitude of the stick vector
 		double power = Math.sqrt(x*x + y*y);
