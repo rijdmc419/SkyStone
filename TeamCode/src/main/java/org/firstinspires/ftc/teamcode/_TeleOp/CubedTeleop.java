@@ -10,11 +10,12 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@TeleOp(name="MAIN Teleop")
+@TeleOp(name="Quals MAIN Teleop")
 public class CubedTeleop extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo lfserv, rfserv;
+    DcMotor intake1;
+    Servo lfserv, rfserv, tempServo, intakeServo;
     BNO055IMU imu;
     boolean A=false; //TODO: make the toggle work again
     boolean whichA=false;
@@ -31,6 +32,8 @@ public class CubedTeleop extends OpMode{
 
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
+
+        tempServo = robot.tempServo;
 
        // imu = robot.imu; //TODO: Setup gyro based strafing
         BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -78,12 +81,13 @@ public class CubedTeleop extends OpMode{
         front *= power;
         back *= power;
 
-        if(gamepad1.right_bumper){
+        if(gamepad1.right_trigger > 0.05f){
             uniPow = 0.5f;
         }
         else {
             uniPow =1f;
         }
+
         //TODO: Test wether cubing the powers when we take them as inputs as opposed to here works.
         //front = front*front*front;
         //back = back*back*back;
@@ -106,6 +110,7 @@ public class CubedTeleop extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
+        telemetry.addData("Intake Pos", intake1.getCurrentPosition());
         // telemetry.addData("Left Mover", lfserv.getPosition());
         //       telemetry.addData("Right Mover", rfserv.getPosition());
         telemetry.addData("Temperature: ", imu.getTemperature().temperature);
@@ -125,6 +130,33 @@ public class CubedTeleop extends OpMode{
             lfserv.setPosition(1f); //up value (start)
             rfserv.setPosition(0f);
         }
+
+        if (gamepad2.b) {
+            tempServo.setPosition(0f); //TODO: FixNums
+        }
+        else {
+            tempServo.setPosition(1f); //TODO: FIxNums
+        }
+
+        if (gamepad2.x) {
+            intakeServo.setPosition(0f); //TODO FixNums
+        }
+        else {
+            intakeServo.setPosition(1f); //TODO FixNUms
+        }
+
+      if(gamepad2.dpad_up){
+       //   if (intake1.getCurrentPosition()){
+              intake1.setPower(1f);
+       //   }
+      }
+      else if(gamepad2.dpad_down){
+          intake1.setPower(-1f);
+      }
+      else{
+          intake1.setPower(0f);
+      }
+
        /* if(gamepad2.a){
             A = true;
         }
