@@ -16,28 +16,35 @@ public class CubedTeleop extends OpMode{
     DcMotor motors[];
     DcMotor intake1;
     Servo lfserv, rfserv, tempServo, intakeServo;
-    BNO055IMU imu;
-    boolean A=false; //TODO: make the toggle work again
+    //BNO055IMU imu;
+    /*boolean A=false; //TODO: make the toggle work again
     boolean whichA=false;
+    int intakePos = 0;*/
 
     @Override
     public void init(){
         motors = new DcMotor[4];
         robot.init(hardwareMap);
+        //motors
         //TODO: see if we can switch the br and fr here rather than in the config file (we'll test that on the Fri before LM2)
         motors[0] = robot.fr;
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
+        intake1 = robot.intake1;
+
+        //servo
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
 
         tempServo = robot.tempServo;
+        intakeServo = robot.intakeServo;
 
+        //sensors
        // imu = robot.imu; //TODO: Setup gyro based strafing
-        BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
-        gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
+        //BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
+        //gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
 
 
     }
@@ -112,8 +119,7 @@ public class CubedTeleop extends OpMode{
         motors[3].setPower(bl);
         telemetry.addData("Intake Pos", intake1.getCurrentPosition());
         // telemetry.addData("Left Mover", lfserv.getPosition());
-        //       telemetry.addData("Right Mover", rfserv.getPosition());
-        telemetry.addData("Temperature: ", imu.getTemperature().temperature);
+        //       telemetry.addData("Right Mover", rfserv.getPosition());]
 
         telemetry.addData("", gamepad1);
 
@@ -123,35 +129,33 @@ public class CubedTeleop extends OpMode{
         telemetry.addData("Temperature (Int): ", intTemp); */
 
         if(gamepad2.a){
-            lfserv.setPosition(0f); //down value
+            lfserv.setPosition(0f); //up value
             rfserv.setPosition(1f);
         }
         else{
-            lfserv.setPosition(1f); //up value (start)
+            lfserv.setPosition(1f); //down value (start)
             rfserv.setPosition(0f);
         }
 
         if (gamepad2.b) {
-            tempServo.setPosition(0f); //TODO: FixNums
+            tempServo.setPosition(1f); //down
         }
         else {
-            tempServo.setPosition(1f); //TODO: FIxNums
+            tempServo.setPosition(0f); //up
         }
 
-        if (gamepad2.x) {
-            intakeServo.setPosition(0f); //TODO FixNums
+        if (gamepad2.x) { //main grab
+            intakeServo.setPosition(1f); //up
         }
         else {
-            intakeServo.setPosition(1f); //TODO FixNUms
+            intakeServo.setPosition(0f); //down
         }
 
-      if(gamepad2.dpad_up){
-       //   if (intake1.getCurrentPosition()){
-              intake1.setPower(1f);
-       //   }
+      if(gamepad2.dpad_down /* && intake1.getCurrentPosition() > NUM */){
+          intake1.setPower(-0.5f); //move motor for intake down
       }
-      else if(gamepad2.dpad_down){
-          intake1.setPower(-1f);
+      else if(gamepad2.dpad_up  && intake1.getCurrentPosition() < 57){
+          intake1.setPower(0.5f); //move motor for intake
       }
       else{
           intake1.setPower(0f);
