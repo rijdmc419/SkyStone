@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode._Auto;
+package org.firstinspires.ftc.teamcode._Auto.BadOnes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
+
 
 @Autonomous(name="Sksystone Ratbot Test")
 @Disabled

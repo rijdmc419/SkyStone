@@ -1,19 +1,17 @@
 package org.firstinspires.ftc.teamcode._Auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
 
-@Autonomous(name="BLUE Depot Park Close")
-public class BlueDepotSideAuto extends OpMode {
+@Autonomous(name="BLUE Depot Park Bridge")
+public class BlueDepotSideFar extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
     Servo lfserv, rfserv;
@@ -48,7 +46,7 @@ public class BlueDepotSideAuto extends OpMode {
         //start sequence
      //   seq.add(new AutoLib.ServoStep(lfserv, 0));
       //  seq.add(new AutoLib.ServoStep(rfserv, 0));
-        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(2), false));
+        seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(-90), rRot(-90), false)); //90d left
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));
 

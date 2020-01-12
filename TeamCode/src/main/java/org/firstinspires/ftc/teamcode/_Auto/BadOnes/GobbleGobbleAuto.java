@@ -1,7 +1,8 @@
-package org.firstinspires.ftc.teamcode._Auto;
+package org.firstinspires.ftc.teamcode._Auto.BadOnes;
 
         import com.qualcomm.hardware.bosch.BNO055IMU;
         import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+        import com.qualcomm.robotcore.eventloop.opmode.Disabled;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
         import com.qualcomm.robotcore.hardware.ColorSensor;
         import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,7 +15,8 @@ package org.firstinspires.ftc.teamcode._Auto;
 
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-@Autonomous(name="Scott's Thanksgiving Auto")
+@Disabled
+@Autonomous(name="PID Tester Broken")
 public class GobbleGobbleAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     ColorSensor clrSnr;

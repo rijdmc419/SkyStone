@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode._Auto.LM3;
+package org.firstinspires.ftc.teamcode._Auto.BadOnes.LM3;
 
 import android.graphics.Color;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,7 +16,8 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 //Useful Thing:
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-@Autonomous(name="LM3 Simple Red Depot")
+@Disabled
+@Autonomous(name="LM3 Complex Red Depot")
 public class RedDepotAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     ColorSensor clrSnr;

@@ -1,13 +1,15 @@
-package org.firstinspires.ftc.teamcode._Auto;
+package org.firstinspires.ftc.teamcode._Auto.BadOnes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 
-@Autonomous(name="depot league meet cero")
-public class LM0Auto extends OpMode {
+@Disabled
+@Autonomous(name="foundation league meet cero")
+public class LM0Auto2 extends OpMode {
     AutoLib.Sequence seq;
     boolean done;
     DcMotor motors[];
@@ -23,9 +25,9 @@ public class LM0Auto extends OpMode {
         float power = 0.5f;
         float sec = 0.5f;
 
-        seq = new AutoLib.LinearSequence();
+        seq = new AutoLib.LinearSequence();//TODO: See if this works with the changed config file
         seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, 0f, power, 0.25f, false));
-        seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, 90f, power, sec, true));
+        seq.add(new AutoLib.MoveSquirrelyByTimeStep(motors, -90f, power, sec, true));
 
         done = false;
     }

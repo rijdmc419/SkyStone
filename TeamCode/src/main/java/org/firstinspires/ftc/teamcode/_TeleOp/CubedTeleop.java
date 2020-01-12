@@ -151,11 +151,11 @@ public class CubedTeleop extends OpMode{
             intakeServo.setPosition(0f); //down
         }
 
-      if(gamepad2.dpad_down /* && intake1.getCurrentPosition() > NUM */){
-          intake1.setPower(-0.5f); //move motor for intake down
+      if(gamepad2.dpad_down){
+          intake1.setPower(-0.75f); //move motor for intake down
       }
-      else if(gamepad2.dpad_up  && intake1.getCurrentPosition() < 57){
-          intake1.setPower(0.5f); //move motor for intake
+      else if(gamepad2.dpad_up){
+          intake1.setPower(0.75f); //move motor for intake
       }
       else{
           intake1.setPower(0f);

@@ -1,6 +1,7 @@
-package org.firstinspires.ftc.teamcode._Auto.LM3;
+package org.firstinspires.ftc.teamcode._Auto.BadOnes.LM3;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 //https://github.com/Scott3-0/7776-ftc_app/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/opmodes/old2017-18/UltraAuto.java
-
+@Disabled
 @Autonomous(name="LM3 Simple Blue Foundation")
 public class BlueFoundationAuto extends OpMode {
     SkystoneHardware bot = new SkystoneHardware();
