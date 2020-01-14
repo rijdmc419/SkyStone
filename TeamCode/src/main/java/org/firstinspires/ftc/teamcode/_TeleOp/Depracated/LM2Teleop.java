@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode._TeleOp;
+package org.firstinspires.ftc.teamcode._TeleOp.Depracated;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
