@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode._Auto.Tests;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
@@ -13,6 +14,8 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class SquirrelyGyroTimedDriveTest extends OpMode {
     SkystoneHardware bot = new SkystoneHardware();
     DcMotor motors[];
+    Servo serv;
+
     BNO055IMUHeadingSensor imu;
     SensorLib.PID pid;
 
@@ -32,6 +35,8 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
         motors[2] = bot.fl;
         motors[3] = bot.bl;
 
+        serv = bot.tempServo;
+
         imu = bot.imu;
 
         //pid setup stuff
@@ -45,9 +50,13 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
 
         // drive a square while maintaining constant orientation (0)
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, -90,0,imu, pid, motors, uniPow, tleg/2,false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 1f));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 0, 0,imu, pid, motors, uniPow, tleg, false));
+        seq.add(new AutoLib.ServoStep(serv, 1f, 1f));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 90, 0,imu, pid, motors, uniPow, tleg, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 1f));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 180, 0,imu, pid, motors, uniPow, tleg, false));
+        seq.add(new AutoLib.ServoStep(serv, 1f, 1f));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 270, 0,imu, pid, motors, uniPow, tleg/2, false));
 
         /* What Paul wrote:
