@@ -48,9 +48,16 @@ public class RedDepotSideFar extends OpMode {
 
         //sequence init
         seq = new AutoLib.LinearSequence();
-
+     //   seq.add(new AutoLib.AzimuthCountedDriveStep(this, 0, imu, pid , motors, uniPow, travDist(24*4), true));
         //TODO: arm up & moves to stone
-        seq.add(new AutoLib.AzimuthCountedDriveStep(this, 0, imu, pid , motors, uniPow, travDist(24), true)); //TODO: TEST THIS, to see that everything works
+        //seq.add(new AutoLib.ServoStep(tserv,0f)); //moves servo up //TODO: Fix
+       // seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 5, false));
+        seq.add(new AutoLib.AzimuthCountedDriveStep(this, 0, imu, pid , motors, 1f, travDist(24), false));
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 5, false)); //this is for debug
+        //heading == swerve direction, orientation == rotation
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 90f, imu, pid, motors, 1f, travDist(24), true)); //why this line no work :(
+    //    seq.add(new AutoLib.AzimuthCountedDriveStep(this, -90f, imu, pid , motors, uniPow, travDist(8), true));
+
         //TODO: arm down
         //TODO: move back to foundation side
         //TODO: arm up
