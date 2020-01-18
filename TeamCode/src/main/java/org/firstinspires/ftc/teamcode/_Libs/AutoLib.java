@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.teamcode._Auto.BlueFoundationBridge;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -1018,7 +1019,7 @@ public class AutoLib {
     static public class AzimuthCountedDriveStep extends ConcurrentSequence implements SetDirectionHeadingPower {
 
         public AzimuthCountedDriveStep(OpMode mode, float heading, HeadingSensor gyro, SensorLib.PID pid,
-                                     DcMotor motors[], float power, float maxPower, int count, boolean stop)
+                                       DcMotor[] motors, float power, float maxPower, int count, boolean stop)
         {
             this(mode, heading, gyro, pid, motors, power, count, stop);
             this.setMaxPower(maxPower);
