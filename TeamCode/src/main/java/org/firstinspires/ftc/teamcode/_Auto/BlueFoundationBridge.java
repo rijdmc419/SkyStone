@@ -25,7 +25,7 @@ public class BlueFoundationBridge extends OpMode{
     //@Override
     public void init(){
         motors = new DcMotor[4];
-        //robot.init(hardwareMap);
+        robot.init(hardwareMap);
 
         motors[0] = robot.fr;
         motors[1] = robot.br;
@@ -45,25 +45,34 @@ public class BlueFoundationBridge extends OpMode{
 
         float uniPow = 0.33f;
 
-        //TODO: WHY IT NO WORK VV
-        //telemetry.addData("Left Servo",lfserv.getPosition());
-        //telemetry.addData("Right Servo",rfserv.getPosition());
-
         seq = new AutoLib.LinearSequence();
 
         //TODO: Code the thing
 
-        //Pseudo Code
         //Start
+        //Move to Foundation
         seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this,0f, 0f, imu, pid, motors, uniPow, travDist(12f), false)); //0.5Tile(T) east
-        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, -90f, -90f, imu, pid, motors, uniPow, travDist(24f), false )); //1T north
-        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this,0f, 0f,imu,pid,motors,uniPow,travDist(24f),true));//1T east
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, -90f, 0f, imu, pid, motors, uniPow, travDist(24f), false )); //1T north
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this,0f, 0f,imu,pid,motors,uniPow,travDist(24f),false));//1T east
+
         //grab  the thing
-        //1.5T west
+        seq.add(new AutoLib.ServoStep(lfserv,1f,1f));//put left foundation servo down //TODO: FixNums
+        seq.add(new AutoLib.ServoStep(rfserv, 0f,1f));//put right foundation servo down //TODO: FixNums
+        seq.add(new AutoLib.TimedMotorStep(motors[0],0f,1.5f,false));//waits for servos to finish moving
+
+        //pull back to build site
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 180f, 0f, imu, pid, motors, uniPow, travDist(36f), false));//1.5T west
+
         //Release the thing
-        //1T South
-        //1T East
-        //1T South
+        seq.add(new AutoLib.ServoStep(lfserv,0f,1f));//put left foundation servo up //TODO: FixNums
+        seq.add(new AutoLib.ServoStep(rfserv, 1f,1f));//put right foundation servo up //TODO: FixNums
+        seq.add(new AutoLib.TimedMotorStep(motors[0],0f,1.5f,false));//waits for servos to finish moving
+
+        //navigate to tape (bridge side)
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 0f, imu, pid, motors, uniPow, travDist(24f), false));//1T South
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 0f, 0f, imu, pid, motors, uniPow, travDist(24f), false));//1T East
+        seq.add(new AutoLib.SquirrelyGyroCountedDriveStep(this, 90f, 0f, imu, pid, motors, uniPow, travDist(24f), true));//1T South
+        //parked on tape end
 
         done = false;
     }
@@ -85,7 +94,7 @@ public class BlueFoundationBridge extends OpMode{
             done = seq.loop(); // returns true when we're done
         }
         else{
-            //telemetry.addData("Sequence finished", ""); //TODO: Telemetry is borked for some reason
+            telemetry.addData("Sequence finished", "");
         }
     }
 }
