@@ -21,7 +21,14 @@ public class RedDepotSideFar extends OpMode {
     AutoLib.Sequence seq;
     boolean done;
     float uniPow =0.33f;
-    SensorLib.PID pid;
+
+    //pid setup stuff
+    float Kp = 0.02f;        // motor power proportional term correction per degree of deviation
+    float Ki = 0.025f;         // ... integrator term
+    float Kd = 0;             // ... derivative term
+    float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
+
+    SensorLib.PID pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
 
     @Override
     public void init(){
@@ -39,12 +46,7 @@ public class RedDepotSideFar extends OpMode {
 
         imu = bot.imu;
 
-        //pid setup stuff
-        float Kp = 0.02f;        // motor power proportional term correction per degree of deviation
-        float Ki = 0.025f;         // ... integrator term
-        float Kd = 0;             // ... derivative term
-        float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
-        pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+
 
         //sequence init
         seq = new AutoLib.LinearSequence();

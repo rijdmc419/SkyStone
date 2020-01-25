@@ -17,15 +17,24 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
     Servo serv;
 
     BNO055IMUHeadingSensor imu;
-    SensorLib.PID pid;
+
+    //pid setup stuff
+    float Kp = 0.015f;        // motor power proportional term correction per degree of deviation
+    float Ki = 0.025f;         // ... integrator term
+    float Kd = 0;             // ... derivative term
+    float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
+    SensorLib.PID pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+
+    SensorLib.PIDAdjuster PIDAdjuster;
 
     AutoLib.Sequence seq;
+    boolean bSetup;
     boolean done;
-    float uniPow = 0.33f;
+    float uniPow = 0.5F;
 
     @Override
     public void init(){
-        float tleg = 1.5f;
+        float tleg = 0.75f;
         bot.init(hardwareMap);
 
         motors = new DcMotor[4];
@@ -39,25 +48,20 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
 
         imu = bot.imu;
 
-        //pid setup stuff
-        float Kp = 0.02f;        // motor power proportional term correction per degree of deviation
-        float Ki = 0.025f;         // ... integrator term
-        float Kd = 0;             // ... derivative term
-        float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
-        pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
+
 
         seq = new AutoLib.LinearSequence();
 
         // drive a square while maintaining constant orientation (0)
-        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, -90,0,imu, pid, motors, uniPow, tleg/2,false));
-        seq.add(new AutoLib.ServoStep(serv, 0f, 1f));
+        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, -90,0,imu, pid, motors, uniPow, tleg/2,false)); //right
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1, false));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 0, 0,imu, pid, motors, uniPow, tleg, false));
-        seq.add(new AutoLib.ServoStep(serv, 1f, 1f));
-        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 90, 0,imu, pid, motors, uniPow, tleg, false));
-        seq.add(new AutoLib.ServoStep(serv, 0f, 1f));
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1, false));
+        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 90, 0,imu, pid, motors, uniPow, tleg, false)); //left
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1, false));
         seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 180, 0,imu, pid, motors, uniPow, tleg, false));
-        seq.add(new AutoLib.ServoStep(serv, 1f, 1f));
-        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 270, 0,imu, pid, motors, uniPow, tleg/2, false));
+        seq.add(new AutoLib.MoveByTimeStep(motors, 0, 1, false));
+        seq.add(new AutoLib.SquirrelyGyroTimedDriveStep(this, 270, 0,imu, pid, motors, uniPow, tleg/2, true));
 
         /* What Paul wrote:
         *
@@ -89,7 +93,25 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
     }
     @Override
     public void loop(){
+        try{
+            if (gamepad1.y)
+                bSetup = true;      // Y button: enter "setup mode" using controller inputs to set Kp and Ki
+            if (gamepad1.x)
+                bSetup = false;     // X button: exit "setup mode"
+            if (bSetup) {           // "setup mode"
+                PIDAdjuster.loop();
+                return;
+            }
+            telemetry.update();
+
+        } catch(NullPointerException e){
+            telemetry.addData("PID Adjuster Didn't work","");
+            telemetry.update();
+        }
+
         if (!done){
+           // for(int i = 0; i < 3; i++)
+             //   seq.loop();
             done = seq.loop(); // returns true when we're done
         }
         else{

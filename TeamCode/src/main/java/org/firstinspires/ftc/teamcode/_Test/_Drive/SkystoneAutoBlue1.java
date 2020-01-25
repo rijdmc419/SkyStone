@@ -24,7 +24,7 @@ import java.util.ArrayList;
  */
 
 // simple example sequence that tests encoder/gyro-based position integration to drive along a given path
-@Autonomous(name="Test: Skystone Auto Blue 1", group ="Test")
+@Autonomous(name="Test: Skystone Auto Blue 1")
 //@Disabled
 public class SkystoneAutoBlue1 extends OpMode {
 
@@ -223,7 +223,7 @@ public class SkystoneAutoBlue1 extends OpMode {
 
         // create a PID controller for the sequence
         // parameters of the PID controller for this sequence - assumes 20-gear motors (fast)
-        float Kp = 0.01f;        // motor power proportional term correction per degree of deviation
+        float Kp = 0.001f; //TODO: FixNum       // motor power proportional term correction per degree of deviation
         float Ki = 0.01f;         // ... integrator term
         float Kd = 0;             // ... derivative term
         float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
@@ -241,7 +241,7 @@ public class SkystoneAutoBlue1 extends OpMode {
         mPosInt = new SensorLib.EncoderGyroPosInt(dt,this, rh.mIMU, rh.mMotors, countsPerRev, wheelDiam, initialPosn);
 
         // (option) Start up Vuforia
-        final boolean bUseVuforia = true;
+        final boolean bUseVuforia = false;
         if (bUseVuforia) {
             mVLib = new VuforiaLib_SkyStone();
             mVLib.init(this);     // pass it this OpMode (so it can do telemetry output)
