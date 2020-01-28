@@ -59,6 +59,7 @@ public class SkystoneHardware {
         intakeServo = hwMap.get(Servo.class, "intakeServo");
 
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
+        imu.setHeadingOffset(90f); //TODO: FixNum
         imu.init(0);
 
         lClr = hwMap.get(ColorSensor.class, "lClr");
