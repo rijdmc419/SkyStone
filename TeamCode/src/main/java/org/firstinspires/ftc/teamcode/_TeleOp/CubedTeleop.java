@@ -8,11 +8,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
+import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 @TeleOp(name="Quals MAIN Teleop")
 public class CubedTeleop extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
+    BNO055IMUHeadingSensor imu;
     DcMotor motors[];
     DcMotor intake1;
     Servo lfserv, rfserv, tempServo, intakeServo;
@@ -25,13 +27,13 @@ public class CubedTeleop extends OpMode{
     public void init(){
         motors = new DcMotor[4];
         robot.init(hardwareMap);
+        imu = robot.imu;
         //motors
         //TODO: see if we can switch the br and fr here rather than in the config file (we'll test that on the Fri before LM2)
         motors[0] = robot.fr;
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl;
-
         intake1 = robot.intake1;
 
         //servo
@@ -117,7 +119,7 @@ public class CubedTeleop extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
-        telemetry.addData("Intake Pos", intake1.getCurrentPosition());
+        telemetry.addData("Heading", imu.getHeading());
         // telemetry.addData("Left Mover", lfserv.getPosition());
         //       telemetry.addData("Right Mover", rfserv.getPosition());]
 
