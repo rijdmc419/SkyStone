@@ -16,8 +16,7 @@ public class CubedTeleop extends OpMode{
     SkystoneHardware robot = new SkystoneHardware();
     BNO055IMUHeadingSensor imu;
     DcMotor motors[];
-    DcMotor intake1;
-    Servo lfserv, rfserv, tempServo, intakeServo;
+    Servo lfserv, rfserv, tempServo;
     //BNO055IMU imu;
     /*boolean A=false; //TODO: make the toggle work again
     boolean whichA=false;
@@ -34,15 +33,12 @@ public class CubedTeleop extends OpMode{
         motors[1] = robot.br;
         motors[2] = robot.fl;
         motors[3] = robot.bl;
-        intake1 = robot.intake1;
 
         //servo
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
 
         tempServo = robot.tempServo;
-        intakeServo = robot.intakeServo;
-
         //sensors
        // imu = robot.imu; //TODO: Setup gyro based strafing
         //BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
@@ -145,23 +141,6 @@ public class CubedTeleop extends OpMode{
         else {
             tempServo.setPosition(0f); //up
         }
-
-        if (gamepad2.x) { //main grab
-            intakeServo.setPosition(1f); //up
-        }
-        else {
-            intakeServo.setPosition(0f); //down
-        }
-
-      if(gamepad2.dpad_down){
-          intake1.setPower(-0.75f); //move motor for intake down
-      }
-      else if(gamepad2.dpad_up){
-          intake1.setPower(0.75f); //move motor for intake
-      }
-      else{
-          intake1.setPower(0f);
-      }
 
        /* if(gamepad2.a){
             A = true;
