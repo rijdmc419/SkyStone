@@ -50,7 +50,7 @@ public class SkystoneHardware {
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
 
-        intake1 = hwMap.get(DcMotor.class, "intake1");
+        //intake1 = hwMap.get(DcMotor.class, "intake1");
         //intake2 = hwMap.get(Servo.) //when you type Servo.class for a motor *5head*
 
         lfServo = hwMap.get(Servo.class, "lfServo");

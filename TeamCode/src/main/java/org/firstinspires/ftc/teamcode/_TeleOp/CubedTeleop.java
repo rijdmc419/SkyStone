@@ -32,7 +32,7 @@ public class CubedTeleop extends OpMode{
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        intake1 = robot.intake1;
+        //intake1 = robot.intake1;
 
         //servo
         lfserv = robot.lfServo;
@@ -117,7 +117,7 @@ public class CubedTeleop extends OpMode{
         motors[1].setPower(br);
         motors[2].setPower(fl);
         motors[3].setPower(bl);
-        telemetry.addData("Intake Pos", intake1.getCurrentPosition());
+        //telemetry.addData("Intake Pos", intake1.getCurrentPosition());
         // telemetry.addData("Left Mover", lfserv.getPosition());
         //       telemetry.addData("Right Mover", rfserv.getPosition());]
 
@@ -151,7 +151,7 @@ public class CubedTeleop extends OpMode{
             intakeServo.setPosition(0f); //down
         }
 
-      if(gamepad2.dpad_down){
+      /*if(gamepad2.dpad_down){
           intake1.setPower(-0.75f); //move motor for intake down
       }
       else if(gamepad2.dpad_up){
@@ -159,7 +159,7 @@ public class CubedTeleop extends OpMode{
       }
       else{
           intake1.setPower(0f);
-      }
+      }*/
 
        /* if(gamepad2.a){
             A = true;
