@@ -52,7 +52,6 @@ public class ComplexTest extends OpMode {
 
         Position initPos = new Position(DistanceUnit.INCH, -1 * tl, (3 * tl) - (botLength / 2), 0.0, 0); // at the BLUE wall
         posInt = new SensorLib.EncoderGyroPosInt(SensorLib.EncoderGyroPosInt.DriveType.MECANUM, this, imu, motors, 560, 4, initPos);
-        telemetry.addData("", "This is the thing breaking it");
 
         //INSERT MOTORS, SERVOS, AND SENSORS HERE
         //uses absolute field coordinate system
@@ -78,6 +77,15 @@ public class ComplexTest extends OpMode {
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(2*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
         seq.add(new AutoLib.ServoStep(serv, 1f, 2f)); //Arm down
         seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge
+        //crosses bridge & deposits stone
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 2 * tl, 0, 0), 90, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2.5 * tl, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        //parks on tape
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0 * tl, 1.5 * tl, 0, 0), -90, tol, true));
+
     }
 
     public int travDist(float in){
