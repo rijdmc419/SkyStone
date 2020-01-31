@@ -21,15 +21,16 @@ public class ComplexTest extends OpMode {
     DcMotor motors[];
     Servo serv;
     int botLength = 16;
+    int stoneWidth = 4;
     int tl = 24; //tile length (in inches)
-    int tol = 1; //tolerance for error (in inches)
+    int tol = 2; //tolerance for error (in inches)
     //INSERT MOTORS, SERVOS, AND SENSORS HERE
     AutoLib.Sequence seq;
     boolean done;
     float uniPow = 0.33f;
 
     @Override
-    public void init(){
+    public void init() {
         bot.init(hardwareMap);
 
         imu = bot.imu;
@@ -42,35 +43,43 @@ public class ComplexTest extends OpMode {
         pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
 
         motors = new DcMotor[4];
-        motors[0] = bot.fr;
-        motors[1] = bot.br;
-        motors[2] = bot.fl;
-        motors[3] = bot.bl;
+        motors[0] = bot.frRevDir;
+        motors[1] = bot.brRevDir;
+        motors[2] = bot.flRevDir;
+        motors[3] = bot.blRevDir;
 
         serv = bot.tempServo;
-try{
-        Position initPos = new Position(DistanceUnit.INCH, -1*tl, (3*tl)-botLength/2, 0.0, 0); // at the BLUE wall
-        posInt = new SensorLib.EncoderGyroPosInt(SensorLib.EncoderGyroPosInt.DriveType.MECANUM, this, imu, motors, 560, 4, initPos);
-} catch (NullPointerException e){
-    telemetry.addData("", "This is the thing breaking it");
-}
 
+        Position initPos = new Position(DistanceUnit.INCH, -1 * tl, (3 * tl) - (botLength / 2), 0.0, 0); // at the BLUE wall
+        posInt = new SensorLib.EncoderGyroPosInt(SensorLib.EncoderGyroPosInt.DriveType.MECANUM, this, imu, motors, 560, 4, initPos);
+        telemetry.addData("", "This is the thing breaking it");
 
         //INSERT MOTORS, SERVOS, AND SENSORS HERE
         //uses absolute field coordinate system
         // corresponding to Vuforia convention of +X to the rear and +Y to the Blue side for coordinate system
         // our code uses bearing zero = +Y, clockwise = -, counterClockwise = +
-        try { //TODO: Add 180 to direction
-            seq = new AutoLib.LinearSequence();
-            seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (3 * tl - (botLength / 2)) - 10, 0, 0), 180, tol, false));
-            seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 1.5 * tl, 0, 0), 90, tol, false));
-            seq.add(new AutoLib.ServoStep(serv, 0f, 1f));
-            seq.add(new AutoLib.LogTimeStep(this, "Arm up", 1f));
-            seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 1 * tl + (botLength / 2), 0, 0), 90, tol, true));
-        } catch (NullPointerException e){
-            telemetry.addData("", "The sequence is the thing breaking it");
-        }
+        //bearing is absolute
+        seq = new AutoLib.LinearSequence();
+        //goes to 1st stone and grabs it
+        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 18+(2*tl), 0, 0), 90, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(1*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
+        seq.add(new AutoLib.ServoStep(serv, 1f, 2f)); //Arm down
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge
+        //crosses bridge & deposits stone
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 2 * tl, 0, 0), 90, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2.5 * tl, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        //goes back and grabs second stone
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(2*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
+        seq.add(new AutoLib.ServoStep(serv, 1f, 2f)); //Arm down
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge
     }
+
     public int travDist(float in){
         double c = 560/(4*(Math.PI));
         int out = (int) Math.round(c*in);
