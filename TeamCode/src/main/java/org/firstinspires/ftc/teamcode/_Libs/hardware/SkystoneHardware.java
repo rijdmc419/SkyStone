@@ -34,6 +34,11 @@ public class SkystoneHardware {
     public Servo tempServo = null;
     public Servo intakeServo = null;
 
+    public DcMotor flRevDir = null;
+    public DcMotor blRevDir = null;
+    public DcMotor frRevDir = null;
+    public DcMotor brRevDir = null;
+
     public BNO055IMUHeadingSensor imu = null;
 
     public ColorSensor lClr = null;
@@ -49,6 +54,11 @@ public class SkystoneHardware {
         bl = hwMap.get(DcMotor.class, "bl");
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
+
+        flRevDir = hwMap.get(DcMotor.class, "fl");
+        blRevDir = hwMap.get(DcMotor.class, "bl");
+        frRevDir = hwMap.get(DcMotor.class, "fr");
+        brRevDir = hwMap.get(DcMotor.class, "br");
 
         //intake1 = hwMap.get(DcMotor.class, "intake1");
         //intake2 = hwMap.get(Servo.) //when you type Servo.class for a motor *5head*
@@ -79,6 +89,22 @@ public class SkystoneHardware {
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        flRevDir.setDirection(DcMotor.Direction.REVERSE);
+        blRevDir.setDirection(DcMotor.Direction.REVERSE);
+        frRevDir.setDirection(DcMotor.Direction.FORWARD);
+        brRevDir.setDirection(DcMotor.Direction.FORWARD);
+
+
+        flRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        blRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        brRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        flRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        blRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        brRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
     }

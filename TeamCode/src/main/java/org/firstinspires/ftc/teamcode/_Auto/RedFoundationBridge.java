@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode._Auto;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,8 +13,8 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
 
-@Autonomous(name = "Blue Foundation Complex Bridge Park")
-public class BlueFoundationBridge extends OpMode{
+@Autonomous(name = "Red Foundation Complex Bridge Park")
+public class RedFoundationBridge extends OpMode{
 
     SkystoneHardware robot = new SkystoneHardware(); //the robot
     DcMotor motors[]; // array of motors
@@ -78,7 +77,7 @@ public class BlueFoundationBridge extends OpMode{
 
 
         //pull back to build site
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -2 * tl, (3 * tl) + botLength/2, 0, 0), 0, tol, false)); //move to (2,-1)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 2 * tl, (-3 * tl) + botLength/2, 0, 0), 0, tol, false)); //move to (2,-1)
 
 
         //release the thing
@@ -87,10 +86,10 @@ public class BlueFoundationBridge extends OpMode{
         seq.add(new AutoLib.LogTimeStep(this, "waiting for servos", 1.5));
 
         //navigate to tape (bridge side)
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (1.5 * tl), 0, 0), 0, tol, false)); //move to (2,-1)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, (-1.5 * tl), 0, 0), 0, tol, false)); //move to (2,-1)
 
         //parked on tape
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0, (1.5 * tl), 0, 0), 0, tol, true));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0, (-1.5 * tl), 0, 0), 0, tol, true));
 
         //End
 
