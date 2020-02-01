@@ -36,9 +36,9 @@ public class ComplexTest extends OpMode {
         imu = bot.imu;
 
         //pid setup stuff
-        float Kp = 0.001f; //TODO: FixNum       // motor power proportional term correction per degree of deviation
-        float Ki = 0.01f;         // ... integrator term
-        float Kd = 0;      // ... derivative term
+        float Kp = 0.001f; //TODO: FixNum (oscillates just a little bit on swerving) // motor power proportional term correction per degree of deviation
+        float Ki = 0.0f;         // ... integrator term
+        float Kd = 0f;      // ... derivative term
         float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
         pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
 
@@ -60,29 +60,29 @@ public class ComplexTest extends OpMode {
         //bearing is absolute
         seq = new AutoLib.LinearSequence();
         //goes to 1st stone and grabs it
-        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
-        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 1f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 18+(2*tl), 0, 0), 90, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(1*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
-        seq.add(new AutoLib.ServoStep(serv, 1f, 2f)); //Arm down
+        seq.add(new AutoLib.ServoStep(serv, 1f, 1f)); //Arm down
         seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge
         //crosses bridge & deposits stone
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 2 * tl, 0, 0), 90, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2.5 * tl, 0, 0), 0, tol, false));
-        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
-        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 1f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2, false));
         //goes back and grabs second stone
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(2*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
-        seq.add(new AutoLib.ServoStep(serv, 1f, 2f)); //Arm down
+        seq.add(new AutoLib.ServoStep(serv, 1f, 1f)); //Arm down
         seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge
         //crosses bridge & deposits stone
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 2 * tl, 0, 0), 90, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2 * tl, 0, 0), 0, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, 2.5 * tl, 0, 0), 0, tol, false));
-        seq.add(new AutoLib.ServoStep(serv, 0f, 2f)); //Arm up
-        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 1, false));
+        seq.add(new AutoLib.ServoStep(serv, 0f, 1f)); //Arm up
+        seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2, false));
         //parks on tape
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0 * tl, 1.5 * tl, 0, 0), -90, tol, true));
 
