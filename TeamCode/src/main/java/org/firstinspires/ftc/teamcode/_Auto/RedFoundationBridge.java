@@ -23,7 +23,7 @@ public class RedFoundationBridge extends OpMode{
 
     SensorLib.EncoderGyroPosInt posInt; //Encoder/gyro-based position integrator to keep track of where we are
 
-    static int botLength = 16; //TODO: FixNum (maybe)
+    static int botLength = 16;
     static int tl = 24; //tile length (in inches)
     int tol = 1; //tolerance for error (in inches)
 
@@ -86,6 +86,7 @@ public class RedFoundationBridge extends OpMode{
         seq.add(new AutoLib.LogTimeStep(this, "waiting for servos", 1.5));
 
         //navigate to tape (bridge side)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, (-3 * tl) + botLength/2, 0, 0), 0, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 1 * tl, (-1.5 * tl), 0, 0), 0, tol, false)); //move to (2,-1)
 
         //parked on tape

@@ -24,7 +24,7 @@ public class BlueFoundationBridge extends OpMode{
 
     SensorLib.EncoderGyroPosInt posInt; //Encoder/gyro-based position integrator to keep track of where we are
 
-    static int botLength = 16; //TODO: FixNum (maybe)
+    static int botLength = 16;
     static int tl = 24; //tile length (in inches)
     int tol = 1; //tolerance for error (in inches)
 
@@ -60,7 +60,7 @@ public class BlueFoundationBridge extends OpMode{
         //uses absolute field coordinate system
         // corresponding to Vuforia convention of +X to the rear and +Y to the Blue side for coordinate system
         // our code uses bearing zero = +Y,
-        Position initPos = new Position(DistanceUnit.INCH, 1*tl, (-3*tl)+botLength/2, 0.0, 0); // at the red wall f-side
+        Position initPos = new Position(DistanceUnit.INCH, 1*tl, (3*tl) - botLength/2, 0.0, 0); // at the red wall f-side
         posInt = new SensorLib.EncoderGyroPosInt(SensorLib.EncoderGyroPosInt.DriveType.MECANUM, this, imu, motors, 560, 4, initPos);
 
         seq = new AutoLib.LinearSequence();
@@ -69,7 +69,7 @@ public class BlueFoundationBridge extends OpMode{
 
         //Start
         //move to foundation
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 2 * tl, (-1 * tl) + botLength/2, 0, 0), 0, tol, false)); //move to (2,-1)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 2 * tl, (-1 * tl) - botLength/2, 0, 0), 180, tol, false)); //move to (2,-1)
 
         //grab  the thing
         seq.add(new AutoLib.ServoStep(rfserv, 0f, 1f)); //right servo down TODO: FixNums
@@ -78,7 +78,7 @@ public class BlueFoundationBridge extends OpMode{
 
 
         //pull back to build site
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -2 * tl, (3 * tl) + botLength/2, 0, 0), 0, tol, false)); //move to (2,-1)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -2 * tl, (3 * tl) - botLength/2, 0, 0), 180, tol, false)); //move to (2,-1)
 
 
         //release the thing
@@ -87,10 +87,11 @@ public class BlueFoundationBridge extends OpMode{
         seq.add(new AutoLib.LogTimeStep(this, "waiting for servos", 1.5));
 
         //navigate to tape (bridge side)
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (1.5 * tl), 0, 0), 0, tol, false)); //move to (2,-1)
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (3 * tl) - botLength/2, 0, 0), 0, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (1.5 * tl), 0, 0), 180, tol, false)); //move to (2,-1)
 
         //parked on tape
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0, (1.5 * tl), 0, 0), 0, tol, true));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, 0, (1.5 * tl), 0, 0), 180, tol, true));
 
         //End
 
