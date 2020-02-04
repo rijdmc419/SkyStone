@@ -18,15 +18,13 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
  * Created by bremm on 9/15/19.
  */
 
-//TODO: Comment this so Daniel can understand!!!
-
 public class SkystoneHardware {
     public DcMotor fl = null;
     public DcMotor bl = null;
     public DcMotor fr  = null;
     public DcMotor br = null;
 
-    public DcMotor intake1 = null;
+    //public DcMotor intake1 = null;
     //public DcMotor intake2 = null;
 
     public Servo lfServo = null;
