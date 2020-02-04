@@ -37,7 +37,7 @@ public class ComplexTest extends OpMode {
 
         //pid setup stuff
         float Kp = 0.001f; //TODO: FixNum (oscillates just a little bit on swerving) // motor power proportional term correction per degree of deviation
-        float Ki = 0.0f;         // ... integrator term
+        float Ki = 0.001f;         // ... integrator term
         float Kd = 0f;      // ... derivative term
         float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
         pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
