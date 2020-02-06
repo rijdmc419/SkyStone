@@ -34,19 +34,24 @@ public class ComplexTest extends OpMode {
         bot.init(hardwareMap);
 
         imu = bot.imu;
+        imu.setHeadingOffset(180f);
 
         //pid setup stuff
-        float Kp = 0.001f; //TODO: FixNum (oscillates just a little bit on swerving) // motor power proportional term correction per degree of deviation
-        float Ki = 0.001f;         // ... integrator term
+        float Kp = 0.01f; //TODO: FixNum (oscillates just a little bit on swerving) // motor power proportional term correction per degree of deviation
+        float Ki = 0f;         // ... integrator term
         float Kd = 0f;      // ... derivative term
         float KiCutoff = 10.0f;    // maximum angle error for which we update integrator
         pid = new SensorLib.PID(Kp, Ki, Kd, KiCutoff);
 
         motors = new DcMotor[4];
-        motors[0] = bot.frRevDir;
-        motors[1] = bot.brRevDir;
-        motors[2] = bot.flRevDir;
-        motors[3] = bot.blRevDir;
+        motors[0] = bot.fr;
+        motors[1] = bot.br;
+        motors[2] = bot.fl;
+        motors[3] = bot.bl;
+
+        for (int i=0; i<motors.length; i++){
+            motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
 
         serv = bot.tempServo;
 
@@ -62,7 +67,7 @@ public class ComplexTest extends OpMode {
         //goes to 1st stone and grabs it
         seq.add(new AutoLib.ServoStep(serv, 0f, 1f)); //Arm up
         seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2, false));
-        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, 18+(2*tl), 0, 0), 90, tol, false));
+        seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl, (1*tl), 0, 0), 180, tol, false));
         seq.add(new AutoLib.SqPosIntDriveToStep(this, posInt, motors, uniPow, pid, new Position(DistanceUnit.INCH, -1 * tl -(1*stoneWidth), 1 * tl + (botLength / 2), 0, 0), 90, tol, false));
         seq.add(new AutoLib.ServoStep(serv, 1f, 1f)); //Arm down
         seq.add(new AutoLib.TimedMotorStep(motors[0], 0, 2,false)); //sstone grabbed, ready to cross bridge

@@ -90,10 +90,10 @@ public class SkystoneHardware {
         brRevDir.setDirection(DcMotor.Direction.FORWARD);
 
 
-        flRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        blRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        brRevDir.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        blRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        brRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         flRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         blRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
