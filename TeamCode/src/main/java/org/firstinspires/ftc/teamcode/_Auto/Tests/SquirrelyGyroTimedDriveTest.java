@@ -44,7 +44,7 @@ public class SquirrelyGyroTimedDriveTest extends OpMode {
         motors[2] = bot.fl;
         motors[3] = bot.bl;
 
-        serv = bot.tempServo;
+        //serv = bot.tempServo;
 
         imu = bot.imu;
 

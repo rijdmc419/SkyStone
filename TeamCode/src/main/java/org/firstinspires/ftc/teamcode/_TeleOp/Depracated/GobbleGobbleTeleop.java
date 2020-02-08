@@ -46,7 +46,7 @@ public class GobbleGobbleTeleop extends OpMode{
 
         lfserv = robot.lfServo;
         rfserv = robot.rfServo;
-        tserv = robot.tempServo;
+        //tserv = robot.tempServo;
         clrSnr = robot.lClr;
         distSnr = robot.lDist;
 

@@ -42,7 +42,7 @@ public class RedDepotSideFar extends OpMode {
         motors[3] = bot.bl;
 
         //servos init
-        tserv = bot.tempServo;
+        //tserv = bot.tempServo;
 
         imu = bot.imu;
 

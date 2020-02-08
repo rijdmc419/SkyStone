@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@Disabled
+@Disabled //TODO: REMEMBER TO REMOVE THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @Autonomous(name = "Test")
 public class AutoTemplate extends OpMode {
     SkystoneHardware bot = new SkystoneHardware();

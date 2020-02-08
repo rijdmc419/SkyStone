@@ -25,15 +25,17 @@ public class SkystoneHardware {
     public DcMotor bl = null;
     public DcMotor fr  = null;
     public DcMotor br = null;
-    
+
     public DcMotor flRevDir = null;
     public DcMotor blRevDir = null;
     public DcMotor frRevDir = null;
+
+    public DcMotor lift = null;
+
     public DcMotor brRevDir = null;
     
     public Servo lfServo = null;
     public Servo rfServo = null;
-    public Servo tempServo = null;
 
     public BNO055IMUHeadingSensor imu = null;
 
@@ -50,6 +52,7 @@ public class SkystoneHardware {
         bl = hwMap.get(DcMotor.class, "bl");
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
+        lift = hwMap.get(DcMotor.class,  "lift");
 
         flRevDir = hwMap.get(DcMotor.class, "fl");
         blRevDir = hwMap.get(DcMotor.class, "bl");
@@ -60,7 +63,6 @@ public class SkystoneHardware {
 
         lfServo = hwMap.get(Servo.class, "lfServo");
         rfServo = hwMap.get(Servo.class, "rfServo");
-        tempServo = hwMap.get(Servo.class, "tempServo");
 
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
         imu.init(0);
