@@ -58,6 +58,7 @@ public class SkystoneHardware {
         lift = hwMap.get(DcMotor.class,  "lift");
 
         //still dont understand why these are here
+        //TODO: LEAVE THESE BE
         flRevDir = hwMap.get(DcMotor.class, "fl");
         blRevDir = hwMap.get(DcMotor.class, "bl");
         frRevDir = hwMap.get(DcMotor.class, "fr");
@@ -72,8 +73,9 @@ public class SkystoneHardware {
         imu.init(4); //TODO: check if this is the right orientation
         /** notes from the orientation
          * byte AXIS_MAP_CONFIG_BYTE = 0x6;     // Z=-X Y=-Y X=-Z
-         * byte AXIS_MAP_SIGN_BYTE = 0x1;       // X Y -Z     ?? if 0x7 -X -Y -Z, X and Y are LH rotations
+         * byte AXIS_MAP_SIGN_BYTE = 0x1;       // X Y -Z     ?? if 0x7 -X -Y -Z, X and Y are LH rotation
          */
+        imu.setDegreesPerTurn(355.0f);
 
         //color distance sensor TODO: Not here right now but like soon^tm
         lClr = hwMap.get(ColorSensor.class, "lClr");
@@ -92,6 +94,7 @@ public class SkystoneHardware {
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //important i think
+        //actually not important
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
