@@ -48,55 +48,68 @@ public class SkystoneHardware {
         hwMap = ahwMap;
 
 
+        //drive motors
         fl = hwMap.get(DcMotor.class, "fl");
         bl = hwMap.get(DcMotor.class, "bl");
         fr = hwMap.get(DcMotor.class, "fr");
         br = hwMap.get(DcMotor.class, "br");
+
+        //lift motors
         lift = hwMap.get(DcMotor.class,  "lift");
 
+        //still dont understand why these are here
         flRevDir = hwMap.get(DcMotor.class, "fl");
         blRevDir = hwMap.get(DcMotor.class, "bl");
         frRevDir = hwMap.get(DcMotor.class, "fr");
         brRevDir = hwMap.get(DcMotor.class, "br");
-        
-        //intake2 = hwMap.get(Servo.) //when you type Servo.class for a motor *5head*
 
+        //foundation mover servos
         lfServo = hwMap.get(Servo.class, "lfServo");
         rfServo = hwMap.get(Servo.class, "rfServo");
 
+        //gyroscope (i hate it)
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
-        imu.init(0);
+        imu.init(4); //TODO: check if this is the right orientation
+        /** notes from the orientation
+         * byte AXIS_MAP_CONFIG_BYTE = 0x6;     // Z=-X Y=-Y X=-Z
+         * byte AXIS_MAP_SIGN_BYTE = 0x1;       // X Y -Z     ?? if 0x7 -X -Y -Z, X and Y are LH rotations
+         */
 
+        //color distance sensor TODO: Not here right now but like soon^tm
         lClr = hwMap.get(ColorSensor.class, "lClr");
         lDist = hwMap.get(DistanceSensor.class, "lClr");
 
+        //gears are difficult
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
         fr.setDirection(DcMotor.Direction.REVERSE);
         br.setDirection(DcMotor.Direction.REVERSE);
 
-
+        //paul thinks not having this might help
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        //important i think
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        //why
         flRevDir.setDirection(DcMotor.Direction.REVERSE);
         blRevDir.setDirection(DcMotor.Direction.REVERSE);
-        frRevDir.setDirection(DcMotor.Direction.FORWARD);
-        brRevDir.setDirection(DcMotor.Direction.FORWARD);
+        frRevDir.setDirection(DcMotor.Direction.REVERSE);
+        brRevDir.setDirection(DcMotor.Direction.REVERSE);
 
-
+        //paul thinks this good
         flRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         blRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         brRevDir.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        //still important (why would you not have a motor set to this)
         flRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         blRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frRevDir.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
