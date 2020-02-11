@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode._TeleOp;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,51 +10,43 @@ import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 
-@TeleOp(name="Quals MAIN Teleop")
-public class CubedTeleop extends OpMode{
-    SkystoneHardware robot = new SkystoneHardware();
+@TeleOp(name="A_Super Mario Quals Teleop")
+public class SuperQualsTeleop extends OpMode {
+    SkystoneHardware bot = new SkystoneHardware();
     BNO055IMUHeadingSensor imu;
     DcMotor motors[];
+    DcMotor lift;
     Servo lfserv, rfserv;
-    //BNO055IMU imu;
-    /*boolean A=false; //TODO: make the toggle work again
-    boolean whichA=false;
-    int intakePos = 0;*/
 
     @Override
     public void init(){
         motors = new DcMotor[4];
-        robot.init(hardwareMap);
-        imu = robot.imu;
-        //motors
-        //TODO: see if we can switch the br and fr here rather than in the config file (we'll test that on the Fri before LM2)
-        motors[0] = robot.fr;
-        motors[1] = robot.br;
-        motors[2] = robot.fl;
-        motors[3] = robot.bl;
+        bot.init(hardwareMap); //DO NOT COMMENT OUT @DANIEL
+        imu = bot.imu; //robot gyro
 
-        //servo
-        lfserv = robot.lfServo;
-        rfserv = robot.rfServo;
+        //robots drive motors
+        motors[0] = bot.fr;
+        motors[1] = bot.br;
+        motors[2] = bot.fl;
+        motors[3] = bot.bl;
 
-        //sensors
-       // imu = robot.imu; //TODO: Setup gyro based strafing
-        //BNO055IMU.Parameters gParams = new BNO055IMU.Parameters();
-        //gParams.temperatureUnit = BNO055IMU.TempUnit.CELSIUS;
+        lift = bot.lift; //lift motor
 
-
+        //foundation servos
+        lfserv = bot.lfServo;
+        rfserv = bot.rfServo;
     }
-
     @Override
     public void start(){
         telemetry.addData("Starting Teleop", "");
     }
-
     @Override
     public void loop(){
         float uniPow; //for 20:1 motors
-        float tx = gamepad1.right_stick_x; //rotation //TODO: Change back from d-pad to left joystick
-        float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
+
+        //gamepad 1 controls movement
+        float tx = gamepad1.right_stick_x; //rotation
+        float ty = -gamepad1.left_stick_y; //TODO: Why is the other one right stick and this is left
 
         float left = (ty + tx/2);
         float right = (ty - tx/2);
@@ -66,7 +57,7 @@ public class CubedTeleop extends OpMode{
         right = Range.clip(right, -1, 1);
 
         float x = gamepad1.left_stick_x; //strafe
-        float y = -gamepad1.right_stick_y;//forward & back
+        float y = -gamepad1.right_stick_y;//forward & back TODO: same as line 44
 
         x=x*x*x;
         y=y*y*y;
@@ -91,14 +82,6 @@ public class CubedTeleop extends OpMode{
         else {
             uniPow =1f;
         }
-
-        //TODO: Test wether cubing the powers when we take them as inputs as opposed to here works.
-        //front = front*front*front;
-        //back = back*back*back;
-        //left = left*left*left;
-        //right = right*right*right;
-
-        //TODO: Also test these
         front *= uniPow;
         back *= uniPow;
         left *= uniPow;
@@ -115,16 +98,20 @@ public class CubedTeleop extends OpMode{
         motors[2].setPower(fl);
         motors[3].setPower(bl);
         telemetry.addData("Heading", imu.getHeading());
-        // telemetry.addData("Left Mover", lfserv.getPosition());
-        //       telemetry.addData("Right Mover", rfserv.getPosition());]
 
-        telemetry.addData("", gamepad1);
 
-       /* String hexTemp =  String.valueOf(gyr0.getTemperature());
-        Long intTemp = Long.decode(hexTemp);
-        telemetry.addData("Temperature (Hex): ", hexTemp);
-        telemetry.addData("Temperature (Int): ", intTemp); */
+        //gamepad 2 controls mechanisms
+        //lift conrtol (they refers to the drive team)
+        float liftPow = 0.5f;
+        double lftDrv = gamepad2.left_stick_y; //g2 left sitck y controls porwer to lift motors
 
+        lftDrv = lftDrv * lftDrv * lftDrv; //cube power so they dont explode it
+
+        lftDrv *= liftPow; //making sure they dont explode it more
+
+        lift.setPower(lftDrv); // actually make the lift go
+
+        //foundation servo control
         if(gamepad2.a){
             lfserv.setPosition(0f); //up value
             rfserv.setPosition(1f);
@@ -133,27 +120,5 @@ public class CubedTeleop extends OpMode{
             lfserv.setPosition(1f); //down value (start)
             rfserv.setPosition(0f);
         }
-
-
-       /* if(gamepad2.a){
-            A = true;
-        }
-        else if(A=true){
-            A = false;
-            whichA= !whichA;
-            if(whichA){
-                lfserv.setPosition(0f);
-                rfserv.setPosition(1f);//down value
-            }
-            else{
-                lfserv.setPosition(1f); //up value (start)
-                rfserv.setPosition(0f);
-            }
-        } */
-    }
-
-    @Override
-    public void stop(){
-
     }
 }

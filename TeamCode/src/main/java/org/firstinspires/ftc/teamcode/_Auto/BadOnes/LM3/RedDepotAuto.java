@@ -56,6 +56,7 @@ public class RedDepotAuto extends OpMode {
         motors = new DcMotor[4];
         robot.init(hardwareMap);
 
+        /*
         //Motors
         motors[0] = robot.fr;
         motors[1] = robot.br;
@@ -93,6 +94,7 @@ public class RedDepotAuto extends OpMode {
         //Drop off the second one and park on the tape
         seq.add(new AutoLib.ServoStep(serv, 0));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(12), true));
+        */
     }
     @Override
     public void start(){
