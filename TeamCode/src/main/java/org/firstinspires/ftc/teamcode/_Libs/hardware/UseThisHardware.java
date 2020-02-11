@@ -33,6 +33,11 @@ public class UseThisHardware {
         lift.setDirection(DcMotor.Direction.FORWARD);//+ === up,  - === down
         lift2.setDirection(DcMotor.Direction.FORWARD);
 
+        //TODO: See if this fucks shit up
+        //this might fuck shit up, we'll see idk
+        lift.setTargetPosition(-40); //lift == right side
+        lift2.setTargetPosition(-50);
+
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
