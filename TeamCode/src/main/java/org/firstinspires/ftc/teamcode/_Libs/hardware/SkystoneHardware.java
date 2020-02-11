@@ -70,7 +70,7 @@ public class SkystoneHardware {
 
         //gyroscope (i hate it)
         imu = new BNO055IMUHeadingSensor(hwMap.get(BNO055IMU.class, "imu"));
-        imu.init(4); //TODO: check if this is the right orientation
+        imu.init(4); //TODO: check if this is the right orientation (lmao no)
         /** notes from the orientation
          * byte AXIS_MAP_CONFIG_BYTE = 0x6;     // Z=-X Y=-Y X=-Z
          * byte AXIS_MAP_SIGN_BYTE = 0x1;       // X Y -Z     ?? if 0x7 -X -Y -Z, X and Y are LH rotation
