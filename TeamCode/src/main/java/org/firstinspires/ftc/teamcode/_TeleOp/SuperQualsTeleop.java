@@ -15,14 +15,15 @@ public class SuperQualsTeleop extends OpMode {
     SkystoneHardware bot = new SkystoneHardware();
     BNO055IMUHeadingSensor imu;
     DcMotor motors[];
-    DcMotor lift;
+    DcMotor lift, lift2, intake;
+    Servo intakeSrv, intakeSrv2;
     Servo lfserv, rfserv;
 
     @Override
     public void init(){
         motors = new DcMotor[4];
         bot.init(hardwareMap); //DO NOT COMMENT OUT @DANIEL
-        imu = bot.imu; //robot gyro
+        imu = bot.imu; //robot gyro TODO why we need this
 
         //robots drive motors
         motors[0] = bot.fr;
@@ -30,7 +31,15 @@ public class SuperQualsTeleop extends OpMode {
         motors[2] = bot.fl;
         motors[3] = bot.bl;
 
+        //lift motors
         lift = bot.lift; //lift motor
+        lift2 = bot.lift2;
+
+        //intake = bot.intake; //4bar intake motor
+
+        //4bar intake servos
+        /**intakeSrv = bot.intakeSrv;
+        intakeSrv2 = bot.intakeSrv2;*/
 
         //foundation servos
         lfserv = bot.lfServo;
@@ -46,7 +55,7 @@ public class SuperQualsTeleop extends OpMode {
 
         //gamepad 1 controls movement
         float tx = gamepad1.right_stick_x; //rotation
-        float ty = -gamepad1.left_stick_y; //TODO: Why is the other one right stick and this is left
+        float ty = -gamepad1.left_stick_y;
 
         float left = (ty + tx/2);
         float right = (ty - tx/2);
@@ -57,7 +66,7 @@ public class SuperQualsTeleop extends OpMode {
         right = Range.clip(right, -1, 1);
 
         float x = gamepad1.left_stick_x; //strafe
-        float y = -gamepad1.right_stick_y;//forward & back TODO: same as line 44
+        float y = -gamepad1.right_stick_y;
 
         x=x*x*x;
         y=y*y*y;
@@ -100,18 +109,30 @@ public class SuperQualsTeleop extends OpMode {
         telemetry.addData("Heading", imu.getHeading());
 
 
-        //gamepad 2 controls mechanisms
-        //lift conrtol (they refers to the drive team)
-        float liftPow = 0.5f;
-        double lftDrv = gamepad2.left_stick_y; //g2 left sitck y controls porwer to lift motors
+        //*gamepad 2 controls mechanisms*
+        //lift conrtol (they refers to the drive team) TODO dis work?
+        double lftDrv = gamepad2.left_stick_y; //g2 left sitck y controls porwer to lift motors TODO does this need to be negative
+        telemetry.addData("Lift Input:", lftDrv);
 
-        lftDrv = lftDrv * lftDrv * lftDrv; //cube power so they dont explode it
+        lftDrv = lftDrv * lftDrv * lftDrv * lftDrv *lftDrv; //x^5 power so they dont explode it
+        telemetry.addData("Power to Lift:", lftDrv);
 
-        lftDrv *= liftPow; //making sure they dont explode it more
+        // actually make the lift go
+        lift.setPower(lftDrv);
+        lift2.setPower(lftDrv);
 
-        lift.setPower(lftDrv); // actually make the lift go
 
-        //foundation servo control
+        //4bar intake motor control TODO dis work?
+        /**double intkDrv = gamepad2.right_stick_y; //g2 right stick y controls power to 4bar on front of lift TODO Negative?
+        telemetry.addData("4Bar Input:", intkDrv);
+
+        intkDrv =intkDrv * intkDrv * intkDrv * intkDrv * intkDrv;
+        telemetry.addData("4Bar Power:", intkDrv);
+
+        intake.setPower(intkDrv); //make it thing**/
+
+
+        //foundation servo control TODO FIXNUMS
         if(gamepad2.a){
             lfserv.setPosition(0f); //up value
             rfserv.setPosition(1f);

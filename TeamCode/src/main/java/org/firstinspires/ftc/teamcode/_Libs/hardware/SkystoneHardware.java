@@ -18,21 +18,24 @@ import org.firstinspires.ftc.teamcode._Libs.SensorLib;
  * Created by bremm on 9/15/19.
  */
 
-//TODO: Comment this so Daniel can understand!!!
-
 public class SkystoneHardware {
     public DcMotor fl = null;
     public DcMotor bl = null;
-    public DcMotor fr  = null;
+    public DcMotor fr = null;
     public DcMotor br = null;
 
     public DcMotor flRevDir = null;
     public DcMotor blRevDir = null;
     public DcMotor frRevDir = null;
+    public DcMotor brRevDir = null;
 
     public DcMotor lift = null;
+    public DcMotor lift2 = null;
 
-    public DcMotor brRevDir = null;
+    //public DcMotor intake = null;
+
+    /**public Servo intakeSrv = null;
+    public Servo intakeSrv2 = null;**/
     
     public Servo lfServo = null;
     public Servo rfServo = null;
@@ -56,6 +59,7 @@ public class SkystoneHardware {
 
         //lift motors
         lift = hwMap.get(DcMotor.class,  "lift");
+        lift2 = hwMap.get(DcMotor.class, "lift2");
 
         //still dont understand why these are here
         //TODO: LEAVE THESE BE
@@ -63,6 +67,13 @@ public class SkystoneHardware {
         blRevDir = hwMap.get(DcMotor.class, "bl");
         frRevDir = hwMap.get(DcMotor.class, "fr");
         brRevDir = hwMap.get(DcMotor.class, "br");
+
+        //4bar intake motor
+        //intake = hwMap.get(DcMotor.class, "intake");
+
+        //4bar intake servos
+        /**intakeSrv = hwMap.get(Servo.class, "intakeSrv");
+        intakeSrv2 = hwMap.get(Servo.class, "intakeSrv2");*/
 
         //foundation mover servos
         lfServo = hwMap.get(Servo.class, "lfServo");
@@ -87,14 +98,20 @@ public class SkystoneHardware {
         fr.setDirection(DcMotor.Direction.REVERSE);
         br.setDirection(DcMotor.Direction.REVERSE);
 
-        //paul thinks not having this might help
+        //keep dis
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        //4bar intake motor setup
+        /**intake.setDirection(DcMotor.Direction.FORWARD); //TODO fixnums (direction)
+        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);**/
+
         //important i think
         //actually not important
+        //huh cool
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         fr.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
