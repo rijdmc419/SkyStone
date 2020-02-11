@@ -115,6 +115,7 @@ public class SuperQualsTeleop extends OpMode {
         telemetry.addData("Lift Input:", lftDrv);
 
         lftDrv = lftDrv * lftDrv * lftDrv * lftDrv *lftDrv; //x^5 power so they dont explode it
+
         telemetry.addData("Power to Lift:", lftDrv);
 
         // actually make the lift go
@@ -133,13 +134,13 @@ public class SuperQualsTeleop extends OpMode {
 
 
         //foundation servo control TODO FIXNUMS
-        if(gamepad2.a){
+        /**if(gamepad2.a){
             lfserv.setPosition(0f); //up value
             rfserv.setPosition(1f);
         }
         else{
             lfserv.setPosition(1f); //down value (start)
             rfserv.setPosition(0f);
-        }
+        }*/
     }
 }
