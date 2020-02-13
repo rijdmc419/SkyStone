@@ -31,16 +31,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package org.firstinspires.ftc.teamcode._TeleOp;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
-import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Test._Drive.RobotHardware;
 
 /*

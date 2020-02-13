@@ -16,9 +16,7 @@
 
 package org.firstinspires.ftc.teamcode._Libs;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 
 import android.os.Build;
@@ -26,9 +24,6 @@ import android.renderscript.Allocation;
 import android.renderscript.Element;
 import android.renderscript.RSRuntimeException;
 import android.renderscript.RenderScript;
-import android.renderscript.Script;
-
-import org.firstinspires.ftc.teamcode.R;
 
 
 import java.util.HashMap;

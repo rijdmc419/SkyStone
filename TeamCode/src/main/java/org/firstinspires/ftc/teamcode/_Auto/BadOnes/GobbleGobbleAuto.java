@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode._Auto.BadOnes;
 
-        import com.qualcomm.hardware.bosch.BNO055IMU;
         import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
         import com.qualcomm.robotcore.eventloop.opmode.Disabled;
         import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -9,7 +8,6 @@ package org.firstinspires.ftc.teamcode._Auto.BadOnes;
 
         import org.firstinspires.ftc.teamcode._Libs.AutoLib;
         import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
-        import org.firstinspires.ftc.teamcode._Libs.HeadingSensor;
         import org.firstinspires.ftc.teamcode._Libs.SensorLib;
         import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 

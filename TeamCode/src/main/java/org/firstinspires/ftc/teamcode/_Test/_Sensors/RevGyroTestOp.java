@@ -3,13 +3,9 @@ package org.firstinspires.ftc.teamcode._Test._Sensors;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.GyroSensor;
 
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
-import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.ToggleButton;
-
-import static android.os.SystemClock.sleep;
 
 
 /**

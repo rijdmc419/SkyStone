@@ -3,9 +3,7 @@ package org.firstinspires.ftc.teamcode._Test._Drive;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode._Libs.AutoLib;
 import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.TestHardware;
 
