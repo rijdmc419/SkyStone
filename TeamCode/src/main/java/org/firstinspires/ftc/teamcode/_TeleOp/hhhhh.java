@@ -15,6 +15,7 @@ public class hhhhh extends OpMode {
     UseThisHardware bot = new UseThisHardware();
     DcMotor mMotors[];
     DcMotor rLift, lLift;
+    DcMotor top;
 
     @Override
     public void init(){
@@ -28,23 +29,22 @@ public class hhhhh extends OpMode {
 
         rLift = bot.lift;
         lLift = bot.lift2;
-
+        top = bot.top;
     }
 
     @Override
     public void start(){
         telemetry.addData("Starting Teleop", "");
-        rLift.setTargetPosition(-40); //lift == right side
-        lLift.setTargetPosition(-50);
     }
 
     @Override
     public void loop(){
         int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10
-        boolean apress = false;                                                //left == lift2
+        boolean atoggle = false;                                                //left == lift2
         double liftInput;                                                      //right == lift
         float uniPow; //for 20:1 motors
-        float liftPow = 0.67f;
+        float liftPow = 0.75f;
+        float topPow = 0.33f;
         float tx = gamepad1.right_stick_x; //rotation
         float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
 
@@ -103,21 +103,22 @@ public class hhhhh extends OpMode {
         telemetry.addData("leftMotor", lLift.getCurrentPosition());
         telemetry.addData("rightMotor", rLift.getCurrentPosition());
 
-        if(gamepad2.a){
-            rLift.setTargetPosition(frLiftLim); //lift == right side
-            lLift.setTargetPosition(flLiftLim); //lift2 == left side
-        }
-        else{
-            rLift.setTargetPosition(brliftlim); //lift == right side
-            lLift.setTargetPosition(blLiftLim); //lift2 == left side
-        }
-        /*
-        liftInput = gamepad2.left_stick_y * gamepad2.left_stick_y * gamepad2.left_stick_y * liftPow;
-        double liftF = Range.clip(liftInput, -1, 1);
+        float liftOutput = Range.clip( gamepad2.left_stick_y * gamepad2.left_stick_y * gamepad2.left_stick_y * liftPow,-1 ,1);
+        telemetry.addData("Lift Output", liftOutput);
 
-        telemetry.addData("Boof", liftF); */
-        rLift.setPower(liftPow);
-       lLift.setPower(liftPow);
+        rLift.setPower(liftOutput);
+        lLift.setPower(liftOutput);
+        /*
+        fl = 23
+        fr = 21
+
+        bl = 170
+        br = 171
+        */
+
+        //4-bar linkage styuf
+        float topOutput = Range.clip(gamepad2.right_stick_y * gamepad2.right_stick_y * gamepad2.right_stick_y * topPow, -1, 1);
+        top.setPower(topOutput);
     }
     @Override
     public void stop(){

@@ -14,6 +14,8 @@ public class UseThisHardware {
     public DcMotor lift = null;
     public DcMotor lift2 = null;
 
+    public DcMotor top = null;
+
     HardwareMap hwMap = null;
 
     public void init(HardwareMap ahwMap){
@@ -25,6 +27,9 @@ public class UseThisHardware {
         br = hwMap.get(DcMotor.class, "br");
         lift = hwMap.get(DcMotor.class, "lift");
         lift2 = hwMap.get(DcMotor.class, "lift2");
+        top = hwMap.get(DcMotor.class, "top");
+
+
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
@@ -32,18 +37,15 @@ public class UseThisHardware {
         br.setDirection(DcMotor.Direction.REVERSE);
         lift.setDirection(DcMotor.Direction.FORWARD);//+ === up,  - === down
         lift2.setDirection(DcMotor.Direction.FORWARD);
-
-        //TODO: See if this fucks shit up
-        //this might fuck shit up, we'll see idk
-        lift.setTargetPosition(-40); //lift == right side
-        lift2.setTargetPosition(-50);
+        top.setDirection(DcMotor.Direction.REVERSE);
 
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lift2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        top.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -51,7 +53,6 @@ public class UseThisHardware {
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
+        top.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }
