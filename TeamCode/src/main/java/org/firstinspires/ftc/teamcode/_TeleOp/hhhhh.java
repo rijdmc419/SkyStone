@@ -38,86 +38,56 @@ public class hhhhh extends OpMode {
 
     @Override
     public void loop(){
-        int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10
-        boolean atoggle = false;                                                //left == lift2
-        double liftInput;                                                      //right == lift
-        float uniPow; //for 20:1 motors
-        float liftPow = 0.75f;
-        float topPow = 0.33f;
-        float tx = gamepad1.right_stick_x; //rotation
-        float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
+        float liftPow = 0.17f;
 
-        float left = (ty + tx/2);
-        float right = (ty - tx/2);
+        double x = gamepad1.left_stick_x;
+        double y = Range.clip(-gamepad1.left_stick_y - gamepad1.right_stick_y, -1, 1);
 
-        ty = ty*ty*ty;
+        double theta = (Math.atan2(y, x) - Math.toRadians(45)) % (2 * Math.PI);//rotate the input
 
-        left = Range.clip(left, -1, 1);
-        right = Range.clip(right, -1, 1);
-
-        float x = gamepad1.left_stick_x; //strafe
-        float y = -gamepad1.right_stick_y;//forward & back
-
-        x=x*x*x;
-        y=y*y*y;
-
-        x = Range.clip(x, -1, 1);
-        y = Range.clip(y, -1, 1);
-
-        double theta = Math.atan2(-x, y);
-        double heading = theta * 180.0/Math.PI;
-
-        AutoLib.MotorPowers mp = AutoLib.GetSquirrelyWheelMotorPowers(heading);
-        double front = mp.Front();
-        double back = mp.Back();
-
-        double power = Math.sqrt(x*x + y*y);
-        front *= power;
-        back *= power;
-
-        if(gamepad1.right_trigger > 0.05f){
-            uniPow = 0.5f;
-        }
-        else {
-            uniPow =1f;
+        if (theta < 0) {
+            theta = 2 * Math.PI + theta;
         }
 
-        front *= uniPow;
-        back *= uniPow;
-        left *= uniPow;
-        right *= uniPow;
+        double mag = Math.pow(Math.sqrt(x*x + y*y), 2);//square input magnitude
 
-        double fr = Range.clip(back+right, -1, 1);
-        double br = Range.clip(front+right, -1, 1);
-        double fl = Range.clip(front+left, -1, 1);
-        double bl = Range.clip(back+left, -1, 1);
+        if (3 * Math.PI / 4 >= theta && theta >= Math.PI / 4) {//normalize input from unit circle to unit square
+            y = mag;
+            x = y / Math.tan(theta);
+        } else if ((Math.PI / 4 >= theta && theta >= 0) || (7 * Math.PI / 4 <= theta && theta <= 2 * Math.PI)) {
+            x = mag;
+            y = x * Math.tan(theta);
+        } else if (5 * Math.PI / 4 <= theta && theta <= 7 * Math.PI / 4) {
+            y = -mag;
+            x = y / Math.tan(theta);
+        } else if (3 * Math.PI / 4 <= theta && theta <= 5 * Math.PI / 4) {
+            x = -mag;
+            y = x * Math.tan(theta);
+        }
+
+        double rotation = Math.pow(gamepad1.right_stick_x, 1) * Math.abs(gamepad1.right_stick_x);
 
 
-        mMotors[0].setPower(fr);
-        mMotors[1].setPower(br);
-        mMotors[2].setPower(fl);
-        mMotors[3].setPower(bl);
+        double[] motorPowers = new double[]{x + rotation, y + rotation, x - rotation, y - rotation};//combine translation and rotation
+        if (Math.abs(motorPowers[0]) > 1 || Math.abs(motorPowers[1]) > 1 || Math.abs(motorPowers[2]) > 1 || Math.abs(motorPowers[3]) > 1) {//if a power is greater than 1 or less than -1, normalize all the motor powers, keeping the proportion the same
+            double maxPower = GetMaxAbsMotorPower();
+            motorPowers = new double[]{adjustPower(motorPowers[0] / maxPower), adjustPower(motorPowers[1] / maxPower), adjustPower(motorPowers[2] / maxPower), adjustPower(motorPowers[3] / maxPower)};
+        } else {
+            motorPowers = new double[]{adjustPower(motorPowers[0]), adjustPower(motorPowers[1]), adjustPower(motorPowers[2]), adjustPower(motorPowers[3])};
+        }
 
-        //Lift styuf
-        telemetry.addData("leftMotor", lLift.getCurrentPosition());
-        telemetry.addData("rightMotor", rLift.getCurrentPosition());
 
-        float liftOutput = Range.clip( gamepad2.left_stick_y * gamepad2.left_stick_y * gamepad2.left_stick_y * liftPow,-1 ,1);
-        telemetry.addData("Lift Output", liftOutput);
+        mMotors[0].setPower(motorPowers[0]);
+        mMotors[1].setPower(motorPowers[1]);
+        mMotors[2].setPower(motorPowers[2]);
+        mMotors[3].setPower(motorPowers[3]);
 
-        rLift.setPower(liftOutput);
-        lLift.setPower(liftOutput);
-        /*
-        fl = 23
-        fr = 21
+        double liftInput = gamepad2.left_stick_y * gamepad2.left_stick_y * gamepad2.left_stick_y * liftPow;
+        liftInput *= -1;
+        double liftF = Range.clip(liftInput, -1, 1);
 
-        bl = 170
-        br = 171
-        */
-
-        //4-bar linkage styuf
-        float topOutput = Range.clip(gamepad2.right_stick_y * gamepad2.right_stick_y * gamepad2.right_stick_y * topPow, -1, 1);
-        top.setPower(topOutput);
+        telemetry.addData("Boof", liftF);
+        top.setPower(liftF);
     }
     @Override
     public void stop(){
