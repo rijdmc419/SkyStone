@@ -70,7 +70,7 @@ public class hhhhh extends OpMode {
 
         double[] motorPowers = new double[]{x + rotation, y + rotation, x - rotation, y - rotation};//combine translation and rotation
         if (Math.abs(motorPowers[0]) > 1 || Math.abs(motorPowers[1]) > 1 || Math.abs(motorPowers[2]) > 1 || Math.abs(motorPowers[3]) > 1) {//if a power is greater than 1 or less than -1, normalize all the motor powers, keeping the proportion the same
-            double maxPower = GetMaxAbsMotorPower();
+            double maxPower = GetMaxAbsMotorPower(motorPowers);
             motorPowers = new double[]{adjustPower(motorPowers[0] / maxPower), adjustPower(motorPowers[1] / maxPower), adjustPower(motorPowers[2] / maxPower), adjustPower(motorPowers[3] / maxPower)};
         } else {
             motorPowers = new double[]{adjustPower(motorPowers[0]), adjustPower(motorPowers[1]), adjustPower(motorPowers[2]), adjustPower(motorPowers[3])};
@@ -89,6 +89,21 @@ public class hhhhh extends OpMode {
         telemetry.addData("Boof", liftF);
         top.setPower(liftF);
     }
+
+    private double adjustPower(double power) {
+        double minPower = 0.15;
+        if (power > 0) {
+            return power * (1 - minPower) + minPower;
+        } else if (power < 0) {
+            return power * (1 - minPower) - minPower;
+        }
+        return 0;
+    }
+
+    private double GetMaxAbsMotorPower(double[] motorPowers) {
+        return Math.max(Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1])), Math.max(Math.abs(motorPowers[2]), Math.abs(motorPowers[3])));
+    }
+
     @Override
     public void stop(){
         super.stop();
