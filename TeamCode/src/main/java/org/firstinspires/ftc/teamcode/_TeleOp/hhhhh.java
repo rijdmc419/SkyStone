@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode._TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
@@ -17,6 +18,18 @@ public class hhhhh extends OpMode {
     DcMotor rLift, lLift;
     DcMotor top;
 
+    Servo lFound, rFound;
+    Servo intake;
+
+    boolean foundToggle = false;
+    boolean intakeToggle = false;
+
+    int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10         //left == lift2
+    double liftInput;                                                      //right == lift
+    float uniPow; //for 20:1 motors
+    float liftPow = 0.75f;
+    float topPow = 0.33f;
+
     @Override
     public void init(){
         mMotors = new DcMotor[4];
@@ -30,6 +43,10 @@ public class hhhhh extends OpMode {
         rLift = bot.lift;
         lLift = bot.lift2;
         top = bot.top;
+
+        lFound = bot.lFound;
+        rFound = bot.rFound;
+        intake = bot.intake;
     }
 
     @Override
@@ -39,12 +56,7 @@ public class hhhhh extends OpMode {
 
     @Override
     public void loop(){
-        int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10
-        boolean atoggle = false;                                                //left == lift2
-        double liftInput;                                                      //right == lift
-        float uniPow; //for 20:1 motors
-        float liftPow = 0.75f;
-        float topPow = 0.33f;
+
         float tx = gamepad1.right_stick_x; //rotation
         float ty = -gamepad1.left_stick_y;	//forward & back -- y is reversed :(
 
@@ -119,6 +131,38 @@ public class hhhhh extends OpMode {
         //4-bar linkage styuf
         float topOutput = Range.clip(gamepad2.right_stick_y * gamepad2.right_stick_y * gamepad2.right_stick_y * topPow, -1, 1);
         top.setPower(topOutput);
+
+        //intake styuf
+        if(gamepad2.a && !intakeToggle){
+            if(intake.getPosition() == 0){ //TODO: Fixnum
+                intake.setPosition(1); //TODO: Fixnum
+            }
+            else{
+                intake.setPosition(0); //TODO: Fixnum
+            }
+
+            intakeToggle = true;
+        }
+        else if(!gamepad2.a){
+            intakeToggle = false;
+        }
+        //Foundation styuf
+
+        if(gamepad2.b && !foundToggle){
+            if(lFound.getPosition() == 0 || rFound.getPosition() == 0){ //TODO: Fixnums
+                lFound.setPosition(1); //TODO: Fixnum
+                rFound.setPosition(1); //TODO: Fixnum
+            }
+            else{
+                lFound.setPosition(0); //TODO: Fixnum
+                rFound.setPosition(0); //TODO: Fixnum
+            }
+
+            foundToggle = true;
+        }
+        else if(!gamepad2.b){
+            foundToggle = false;
+        }
     }
     @Override
     public void stop(){

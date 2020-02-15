@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode._Libs.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 //TODO: Add all the other shit from the whiteboard image (in Daniel-Scott texts)
 public class UseThisHardware {
@@ -15,6 +16,11 @@ public class UseThisHardware {
     public DcMotor lift2 = null;
 
     public DcMotor top = null;
+
+    public Servo lFound = null;
+    public Servo rFound = null;
+
+    public Servo intake = null;
 
     HardwareMap hwMap = null;
 
@@ -29,7 +35,9 @@ public class UseThisHardware {
         lift2 = hwMap.get(DcMotor.class, "lift2");
         top = hwMap.get(DcMotor.class, "top");
 
-
+        lFound = hwMap.get(Servo.class, "lFound");
+        rFound = hwMap.get(Servo.class, "rFound");
+        intake = hwMap.get(Servo.class, "intake");
 
         fl.setDirection(DcMotor.Direction.FORWARD);
         bl.setDirection(DcMotor.Direction.FORWARD);
