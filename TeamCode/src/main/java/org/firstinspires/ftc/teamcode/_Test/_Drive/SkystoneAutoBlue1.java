@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Libs.HeadingSensor;
 import org.firstinspires.ftc.teamcode._Libs.SensorLib;
 import org.firstinspires.ftc.teamcode._Libs.VuforiaLib_SkyStone;
 

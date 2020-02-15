@@ -1,13 +1,6 @@
 package org.firstinspires.ftc.teamcode._Test._AutoLib;
 
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-
-import org.firstinspires.ftc.teamcode._Libs.AutoLib;
-import org.firstinspires.ftc.teamcode._Libs.ToggleButton;
-
-
 /**
  * A test example of autonomous opmode programming using AutoLib classes.
  * This one tests the Switch Step construct.

@@ -71,8 +71,8 @@ public class SuperQualsTeleop extends OpMode {
         x=x*x*x;
         y=y*y*y;
 
-        x = Range.clip(x, -1, 1);
-        y = Range.clip(y, -1, 1);
+//        x = Range.clip(x, -1, 1);
+//        y = Range.clip(y, -1, 1);
 
         double theta = Math.atan2(-x, y);
         double heading = theta * 180.0/Math.PI;
