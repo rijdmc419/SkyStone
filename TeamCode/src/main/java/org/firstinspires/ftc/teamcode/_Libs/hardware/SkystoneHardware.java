@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode._Libs.hardware;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -12,7 +13,6 @@ import org.firstinspires.ftc.teamcode._Libs.BNO055IMUHeadingSensor;
 /**
  * Created by bremm on 9/15/19.
  */
-
 public class SkystoneHardware {
     public DcMotor fl = null;
     public DcMotor bl = null;

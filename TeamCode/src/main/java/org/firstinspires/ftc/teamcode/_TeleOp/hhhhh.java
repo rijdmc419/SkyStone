@@ -26,7 +26,7 @@ public class hhhhh extends OpMode {
     int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10         //left == lift2
     double liftInput;                                                      //right == lift
     float uniPow; //for 20:1 motors
-    float liftPow = 0.75f;
+    float liftPow = 1f;
     float topPow = 0.33f;
 
     @Override
@@ -148,12 +148,12 @@ public class hhhhh extends OpMode {
         //Foundation styuf
 
         if(gamepad2.b && !foundToggle){
-            if(lFound.getPosition() == 0 || rFound.getPosition() == 0){ //TODO: Fixnums
-                lFound.setPosition(1); //TODO: Fixnum
-                rFound.setPosition(1); //TODO: Fixnum
+            if(lFound.getPosition() == 0.75 || rFound.getPosition() == (6/7)){ //TODO: Fixnums
+                lFound.setPosition(0.75); //TODO: Fixnum //outside values
+                rFound.setPosition(6/7); //TODO: Fixnum
             }
             else{
-                lFound.setPosition(0); //TODO: Fixnum
+                lFound.setPosition(6/7); //TODO: Fixnum //inside values
                 rFound.setPosition(0); //TODO: Fixnum
             }
 
