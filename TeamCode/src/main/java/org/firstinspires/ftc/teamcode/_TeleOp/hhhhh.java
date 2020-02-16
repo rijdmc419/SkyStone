@@ -14,14 +14,14 @@ public class hhhhh extends OpMode {
     //Hardware shiz my niz
     UseThisHardware bot = new UseThisHardware();
     DcMotor mMotors[];
-    DcMotor rLift, lLift;
+    DcMotor rLift, lLift, rLift2;
     DcMotor top;
 
     Servo lFound, rFound;
     Servo intake;
 
-    boolean foundToggle = false;
     boolean intakeToggle = false;
+    boolean foundToggle = false;
 
     int flLiftLim = -145, frLiftLim = -155, blLiftLim = 10, brliftlim = 0; //lift == lift2 + 10         //left == lift2
     double liftInput;                                                      //right == lift
@@ -40,6 +40,7 @@ public class hhhhh extends OpMode {
         mMotors[3] = bot.bl;
 
         rLift = bot.lift;
+        rLift2 = bot.lift3;
         lLift = bot.lift2;
         top = bot.top;
 
@@ -50,6 +51,7 @@ public class hhhhh extends OpMode {
 
     @Override
     public void start(){
+        intake.setPosition(0);
         telemetry.addData("Starting Teleop", "");
     }
 
@@ -111,13 +113,10 @@ public class hhhhh extends OpMode {
         mMotors[3].setPower(bl);
 
         //Lift styuf
-        telemetry.addData("leftMotor", lLift.getCurrentPosition());
-        telemetry.addData("rightMotor", rLift.getCurrentPosition());
-
         float liftOutput = Range.clip( gamepad2.left_stick_y * gamepad2.left_stick_y * gamepad2.left_stick_y * liftPow,-1 ,1);
-        telemetry.addData("Lift Output", liftOutput);
 
         rLift.setPower(liftOutput);
+        rLift2.setPower(liftOutput);
         lLift.setPower(liftOutput);
         /*
         fl = 23
@@ -132,39 +131,62 @@ public class hhhhh extends OpMode {
         top.setPower(topOutput);
 
         //intake styuf
+        float intakeDown = 1;
+        float intakeUp = 0.25f;
+
         if(gamepad2.a && !intakeToggle){
-            if(intake.getPosition() == 0){ //TODO: Fixnum
-                intake.setPosition(1); //TODO: Fixnum
+            if(intake.getPosition() == intakeDown){
+                intake.setPosition(intakeUp);
             }
             else{
-                intake.setPosition(0); //TODO: Fixnum
+                intake.setPosition(intakeDown);
             }
 
             intakeToggle = true;
-        }
-        else if(!gamepad2.a){
+        } else if(!gamepad2.a){
             intakeToggle = false;
         }
+
         //Foundation styuf
+        float lFoundDown = 1;
+        float rFoundDown = 0;
+
+        float lFoundUp = 0.25f;
+        float rFoundUp = 1;
 
         if(gamepad2.b && !foundToggle){
-            if(lFound.getPosition() == 0.75 || rFound.getPosition() == (6/7)){ //TODO: Fixnums
-                lFound.setPosition(0.75); //TODO: Fixnum //outside values
-                rFound.setPosition(6/7); //TODO: Fixnum
+            if(lFound.getPosition() == lFoundDown || rFound.getPosition() == rFoundDown){
+                lFound.setPosition(lFoundUp);
+                rFound.setPosition(rFoundUp);
             }
             else{
-                lFound.setPosition(6/7); //TODO: Fixnum //inside values
-                rFound.setPosition(0); //TODO: Fixnum
+                lFound.setPosition(lFoundDown);
+                rFound.setPosition(rFoundDown);
             }
-
             foundToggle = true;
-        }
-        else if(!gamepad2.b){
+
+        } else if(!gamepad2.b){
             foundToggle = false;
         }
+
+        //Telemetry
+        telemetry.addData("leftMotor Pos", lLift.getCurrentPosition());
+        telemetry.addData("rightMotor Pos", rLift.getCurrentPosition());
+        telemetry.addData("rightMotor2 Pos", rLift2.getCurrentPosition());
+
+        telemetry.addData("Joystick Output", liftOutput);
+
+        telemetry.addData("lFound Pos", lFound.getPosition());
+        telemetry.addData("rFound Pos", rFound.getPosition());
+        telemetry.addData("intake Pos", intake.getPosition());
+
+
+        //telemetry.addData("Foundation Toggle",);
+
     }
     @Override
     public void stop(){
         super.stop();
     }
+
 }

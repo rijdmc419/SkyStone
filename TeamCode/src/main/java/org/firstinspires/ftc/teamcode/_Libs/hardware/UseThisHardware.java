@@ -14,6 +14,7 @@ public class UseThisHardware {
 
     public DcMotor lift = null;
     public DcMotor lift2 = null;
+    public DcMotor lift3 = null;
 
     public DcMotor top = null;
 
@@ -33,6 +34,7 @@ public class UseThisHardware {
         br = hwMap.get(DcMotor.class, "br");
         lift = hwMap.get(DcMotor.class, "lift");
         lift2 = hwMap.get(DcMotor.class, "lift2");
+        lift3 = hwMap.get(DcMotor.class, "lift3");
         top = hwMap.get(DcMotor.class, "top");
 
         lFound = hwMap.get(Servo.class, "lFound");
@@ -43,8 +45,9 @@ public class UseThisHardware {
         bl.setDirection(DcMotor.Direction.FORWARD);
         fr.setDirection(DcMotor.Direction.REVERSE);
         br.setDirection(DcMotor.Direction.REVERSE);
-        lift.setDirection(DcMotor.Direction.FORWARD);//+ === up,  - === down
-        lift2.setDirection(DcMotor.Direction.FORWARD);
+        lift.setDirection(DcMotor.Direction.FORWARD);//Right
+        lift2.setDirection(DcMotor.Direction.REVERSE); //Left, + === up,  - === down
+        lift3.setDirection(DcMotor.Direction.REVERSE); //Left, + === up,  - === down
         top.setDirection(DcMotor.Direction.REVERSE);
 
         fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -53,6 +56,7 @@ public class UseThisHardware {
         br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         top.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         fl.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -61,6 +65,7 @@ public class UseThisHardware {
         br.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         lift2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         top.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }
