@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class FoundationSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo lfserv, rfserv;
+    //Servo lfserv, rfserv;
     AutoLib.Sequence seq;
     boolean done;
 

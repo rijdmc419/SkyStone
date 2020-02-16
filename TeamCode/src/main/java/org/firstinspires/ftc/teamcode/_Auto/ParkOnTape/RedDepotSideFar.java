@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class RedDepotSideFar extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo lfserv, rfserv;
+    //Servo lfserv, rfserv;
     AutoLib.Sequence seq;
     AutoLib.Sequence foundSeq;
     boolean done;
@@ -31,14 +31,14 @@ public class RedDepotSideFar extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        lfserv = robot.lfServo;
-        rfserv= robot.rfServo;
+        //lfserv = robot.lfServo;
+        //rfserv= robot.rfServo;
 
         //telemetry.addData("Left Mover", fservos[0]);
         //telemetry.addData("Right Mover", fservos[1]);
 
-        telemetry.addData("Left Mover", lfserv);
-        telemetry.addData("Right Mover", rfserv);
+        //telemetry.addData("Left Mover", lfserv);
+        //telemetry.addData("Right Mover", rfserv);
 
        // foundSeq = new AutoLib.ConcurrentSequence();
         seq = new AutoLib.LinearSequence();
@@ -46,8 +46,8 @@ public class RedDepotSideFar extends OpMode {
        // foundSeq.add(new AutoLib.ServoStep(lfserv, 0));
         //foundSeq.add(new AutoLib.ServoStep(rfserv, 0));
         //start sequence
-        seq.add(new AutoLib.ServoStep(lfserv, 0));
-        seq.add(new AutoLib.ServoStep(rfserv, 0));
+        //seq.add(new AutoLib.ServoStep(lfserv, 0));
+        //seq.add(new AutoLib.ServoStep(rfserv, 0));
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), false));
         seq.add(new AutoLib.TurnByEncoderStep(motors[0], motors[1], motors[2], motors[3], uniPow, uniPow, lRot(90), rRot(90), false)); //90d right
         seq.add(new AutoLib.MoveByEncoderStep(motors, uniPow, travDist(24), true));

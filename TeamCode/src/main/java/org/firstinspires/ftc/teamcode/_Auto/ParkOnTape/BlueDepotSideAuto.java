@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode._Libs.hardware.SkystoneHardware;
 public class BlueDepotSideAuto extends OpMode {
     SkystoneHardware robot = new SkystoneHardware();
     DcMotor motors[];
-    Servo lfserv, rfserv;
+    //Servo lfserv, rfserv;
     AutoLib.Sequence seq;
     AutoLib.Sequence foundSeq;
     boolean done;
@@ -30,13 +30,13 @@ public class BlueDepotSideAuto extends OpMode {
         motors[2] = robot.fl;
         motors[3] = robot.bl;
 
-        lfserv = robot.lfServo;
-        rfserv= robot.rfServo;
+        //lfserv = robot.lfServo;
+        //rfserv= robot.rfServo;
 
         float uniPow = 0.33f;
 
-        telemetry.addData("Left Mover", lfserv);
-        telemetry.addData("Right Mover", rfserv);
+        //telemetry.addData("Left Mover", lfserv);
+        //telemetry.addData("Right Mover", rfserv);
 
         // foundSeq = new AutoLib.ConcurrentSequence();
         seq = new AutoLib.LinearSequence();
